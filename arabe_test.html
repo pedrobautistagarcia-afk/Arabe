@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yalla — Tu árabe a prueba</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Inter:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap');
+  :root{
+    --sand:#F3EDE2; --ink:#1C1A17; --clay:#C8643C; --clay-deep:#A84E2C;
+    --teal:#2C6E6A; --gold:#D9A441; --paper:#FBF8F2;
+    --ok:#3E7C4F; --mid:#D9A441; --no:#B5443A; --line:#DAD0BE;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:var(--sand);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+  .ar{font-family:'Amiri',serif;direction:rtl}
+  .wrap{max-width:680px;margin:0 auto;padding:20px 16px 90px}
+  header{text-align:center;padding:14px 0 4px}
+  .logo{font-family:'Fraunces',serif;font-weight:900;font-size:40px;letter-spacing:-1px;line-height:1}
+  .logo .dot{color:var(--clay)}
+  .tag{font-size:13px;color:#6B6557;margin-top:4px;letter-spacing:.3px}
+  .tabs{display:flex;gap:6px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:5px;margin-top:16px}
+  .tab{flex:1;border:none;background:none;padding:11px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;color:#8A8577;transition:.15s}
+  .tab.on{background:var(--ink);color:var(--paper)}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:20px;margin-top:16px}
+  .label{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:#8A8577;font-weight:600;margin-bottom:10px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;transition:.15s;color:var(--ink);font-family:inherit}
+  .chip:hover{border-color:var(--clay)} .chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .chip.small{padding:6px 11px;font-size:12px}
+  .modes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .mode{border:1.5px solid var(--line);background:transparent;border-radius:14px;padding:13px 6px;cursor:pointer;text-align:center;transition:.15s;font-family:inherit}
+  .mode:hover{border-color:var(--clay)} .mode.on{border-color:var(--clay);background:#FBEDE6}
+  .mode .ic{font-size:20px;margin-bottom:3px} .mode .nm{font-size:11.5px;font-weight:600}
+  .dirs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .start{width:100%;margin-top:18px;background:var(--clay);color:#fff;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s;letter-spacing:.3px}
+  .start:hover{background:var(--clay-deep)} .start:disabled{background:#C9C1B2;cursor:not-allowed}
+  .selrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .selbtns{display:flex;gap:6px}
+  .mini{font-size:11px;color:var(--teal);background:none;border:none;cursor:pointer;font-weight:600;font-family:inherit;text-decoration:underline}
+  .deckmeta{font-size:12px;color:#8A8577;margin-top:6px}
+  .stat{font-size:13px;color:#6B6557;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px}
+  .vrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
+  .vlabel{font-size:13px;font-weight:600;color:#6B6557}
+  .switch{position:relative;width:46px;height:26px;flex-shrink:0}
+  .switch input{display:none}
+  .slider{position:absolute;inset:0;background:#D8CEBC;border-radius:99px;cursor:pointer;transition:.2s}
+  .slider:before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+  .switch input:checked+.slider{background:var(--teal)}
+  .switch input:checked+.slider:before{transform:translateX(20px)}
+  .vnote{font-size:11px;color:#A89F8C;margin-top:8px;line-height:1.5}
+
+  /* SRS banner */
+  .srs{background:linear-gradient(135deg,#2C6E6A,#235753);color:#fff;border-radius:18px;padding:18px 20px;margin-top:16px;position:relative;overflow:hidden}
+  .srs .h{font-family:'Fraunces',serif;font-weight:600;font-size:20px;margin-bottom:4px}
+  .srs .s{font-size:13px;opacity:.9;line-height:1.5}
+  .srs .due{font-size:42px;font-family:'Fraunces',serif;font-weight:900;line-height:1}
+  .srs .duewrap{display:flex;align-items:center;gap:14px;margin-top:10px}
+  .srsbtn{background:#fff;color:var(--teal);border:none;border-radius:12px;padding:12px 18px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;flex-shrink:0}
+  .srsbtn:disabled{opacity:.5;cursor:not-allowed}
+  .srsinfo{font-size:11px;opacity:.75;margin-top:10px;cursor:pointer;text-decoration:underline}
+
+  /* EXPLORE */
+  .search{width:100%;border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:13px 14px;font-size:15px;font-family:inherit;margin-bottom:12px}
+  .search:focus{outline:none;border-color:var(--clay)}
+  .filterbar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;align-items:center}
+  .expctrl{display:flex;gap:6px;margin-bottom:14px}
+  .acc{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:10px;background:var(--paper)}
+  .acchead{display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;user-select:none;transition:.12s}
+  .acchead:hover{background:#F5EFE3}
+  .accname{flex:1;font-family:'Fraunces',serif;font-weight:600;font-size:17px}
+  .acccnt{font-size:11px;font-weight:600;color:#A89F8C;background:#EDE6D6;border-radius:99px;padding:2px 9px}
+  .miniprog{display:flex;gap:3px;margin-right:4px}
+  .mpdot{width:6px;height:6px;border-radius:50%;background:#E0D7C5}
+  .mpdot.ok{background:var(--ok)}
+  .chev{font-size:13px;color:#A89F8C;transition:transform .2s}
+  .acc.open .chev{transform:rotate(90deg)}
+  .accbody{display:none}
+  .acc.open .accbody{display:block}
+  .row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--line)}
+  .res{flex-shrink:0;width:8px;height:8px;border-radius:50%;background:#D8CEBC}
+  .res.ok{background:var(--ok)} .res.mid{background:var(--mid)} .res.no{background:var(--no)}
+  .rmain{flex:1;min-width:0}
+  .res-es{font-size:15px;font-weight:600}
+  .res-tr{font-size:13px;color:#8A8577}
+  .rar{font-family:'Amiri',serif;font-size:23px;direction:rtl;color:var(--ink);min-width:54px;text-align:right}
+  .iconbtn{flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1.5px solid var(--line);background:var(--paper);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:.15s}
+  .iconbtn.play{color:var(--teal)} .iconbtn.play:hover{border-color:var(--teal);background:#E4EEED}
+  .iconbtn.know{color:#B9B0A0} .iconbtn.know:hover{border-color:var(--ok);color:var(--ok)}
+  .iconbtn.know.on{background:var(--ok);border-color:var(--ok);color:#fff}
+  .iconbtn:active{transform:scale(.9)}
+  .newdot{font-size:8px;font-weight:800;color:#5A3D00;background:var(--gold);border-radius:99px;padding:2px 6px;margin-left:6px;vertical-align:middle}
+  .tagmini{font-size:9px;font-weight:700;padding:2px 7px;border-radius:99px;letter-spacing:.3px;flex-shrink:0}
+  .t-lb{background:#F6E0D6;color:var(--clay-deep)} .t-kw{background:#D6E8E6;color:var(--teal)} .t-com{background:#E8E4D8;color:#6B6557}
+  .empty{text-align:center;color:#A89F8C;padding:40px 20px;font-size:14px}
+
+  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+  .back{background:none;border:none;font-size:14px;color:#6B6557;cursor:pointer;font-family:inherit;font-weight:500;padding:4px}
+  .counter{font-size:13px;font-weight:600;color:#6B6557}
+  .progress{height:6px;background:#E7DECB;border-radius:99px;overflow:hidden;flex:1}
+  .pfill{height:100%;background:var(--clay);width:0;transition:.3s}
+  .stage{min-height:340px;display:flex;flex-direction:column}
+  .flash{flex:1;perspective:1200px;cursor:pointer;min-height:300px}
+  .flinner{position:relative;width:100%;height:100%;min-height:300px;transition:transform .5s;transform-style:preserve-3d}
+  .flash.flip .flinner{transform:rotateY(180deg)}
+  .face{position:absolute;inset:0;backface-visibility:hidden;background:var(--paper);border:1px solid var(--line);border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center}
+  .face.bk{transform:rotateY(180deg)}
+  .qbig{font-family:'Fraunces',serif;font-size:34px;font-weight:600;line-height:1.15}
+  .qbig.ar{font-family:'Amiri',serif;font-size:46px}
+  .qsub{font-size:13px;color:#9A9385;margin-top:14px;letter-spacing:.5px;text-transform:uppercase}
+  .hint{position:absolute;bottom:16px;font-size:12px;color:#B3AB9A}
+  .tagpill{position:absolute;top:16px;right:16px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;letter-spacing:.5px}
+  .newpill{position:absolute;top:16px;left:16px;font-size:9px;font-weight:800;padding:3px 8px;border-radius:99px;background:var(--gold);color:#5A3D00;letter-spacing:.5px}
+  .speak{position:absolute;bottom:14px;right:14px;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--paper);cursor:pointer;font-size:17px;color:var(--teal);display:flex;align-items:center;justify-content:center}
+  .speak:hover{border-color:var(--teal);background:#E4EEED}
+  .selfrate{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+  .rate{border:none;border-radius:13px;padding:14px 6px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;color:#fff;transition:.15s}
+  .rate:active{transform:scale(.97)}
+  .r-no{background:var(--no)} .r-mid{background:var(--mid);color:#4A3500} .r-ok{background:var(--ok)}
+  .ratehint{text-align:center;font-size:12px;color:#9A9385;margin-top:10px}
+  .qcard{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:30px 24px;text-align:center;position:relative;min-height:150px;display:flex;flex-direction:column;justify-content:center}
+  .opts{display:grid;gap:10px;margin-top:16px}
+  .opt{border:1.5px solid var(--line);background:var(--paper);border-radius:13px;padding:16px;font-size:17px;cursor:pointer;transition:.12s;font-family:inherit;text-align:center;color:var(--ink)}
+  .opt:hover:not(:disabled){border-color:var(--clay)}
+  .opt.ar{font-family:'Amiri',serif;font-size:24px}
+  .opt.correct{background:#E3F0E5;border-color:var(--ok);color:var(--ok);font-weight:700}
+  .opt.wrong{background:#F6E1DF;border-color:var(--no);color:var(--no)}
+  .opt:disabled{cursor:default}
+  .winput{width:100%;border:1.5px solid var(--line);background:var(--paper);border-radius:13px;padding:16px;font-size:18px;font-family:inherit;margin-top:16px;text-align:center}
+  .winput:focus{outline:none;border-color:var(--clay)}
+  .wbtn{width:100%;margin-top:10px;background:var(--ink);color:#fff;border:none;border-radius:13px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+  .wfeedback{margin-top:14px;padding:14px;border-radius:13px;font-size:14px;display:none}
+  .wfeedback.show{display:block}
+  .wfeedback.good{background:#E3F0E5;color:var(--ok)} .wfeedback.bad{background:#F6E1DF;color:var(--no)}
+  .wfeedback .ans{font-weight:700;font-size:17px;margin-top:4px}
+  .wself{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  .done{text-align:center;padding:30px 10px}
+  .done .big{font-family:'Fraunces',serif;font-size:30px;font-weight:900;margin-bottom:6px}
+  .scoreline{display:flex;justify-content:center;gap:20px;margin:22px 0}
+  .scol{text-align:center} .scol .n{font-size:30px;font-weight:800;font-family:'Fraunces',serif}
+  .scol .l{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8A8577;margin-top:2px}
+  .n.ok{color:var(--ok)} .n.mid{color:var(--mid)} .n.no{color:var(--no)}
+  footer{text-align:center;font-size:11px;color:#A89F8C;margin-top:30px;line-height:1.6}
+  .kbd{display:inline-block;background:#E7DECB;border-radius:5px;padding:1px 6px;font-size:11px;font-weight:600;color:#6B6557}
+  @media(max-width:420px){.qbig{font-size:28px}.logo{font-size:36px}.modes{grid-template-columns:repeat(2,1fr)}}
+  @media(prefers-reduced-motion:reduce){.flinner{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">yalla<span class="dot">.</span></div>
+    <div class="tag">tu árabe libanés · kuwaití</div>
+  </header>
+
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-tab="explore">📖 Explorar</button>
+    <button class="tab" data-tab="practice">🎯 Practicar</button>
+  </div>
+
+  <!-- EXPLORE -->
+  <div id="explore">
+    <div class="srs" id="srsBanner" style="display:none"></div>
+    <div style="margin-top:16px">
+      <input class="search" id="search" placeholder="Buscar en español, árabe o transcripción…" autocomplete="off">
+      <div class="filterbar">
+        <button class="chip small on" data-f="all">Todas</button>
+        <button class="chip small" data-f="new">✨ Nuevas</button>
+        <button class="chip small" data-f="lb">🇱🇧 Libanés</button>
+        <button class="chip small" data-f="kw">🇰🇼 Kuwaití</button>
+        <button class="chip small" data-f="com">⚪ Común</button>
+        <button class="chip small" data-f="no">❌ Por aprender</button>
+        <button class="chip small" data-f="mid">🔶 A mejorar</button>
+      </div>
+      <div class="expctrl">
+        <button class="mini" onclick="expandAll(true)">Desplegar todo</button>
+        <button class="mini" onclick="expandAll(false)">Plegar todo</button>
+      </div>
+    </div>
+    <div id="exploreList"></div>
+  </div>
+
+  <!-- PRACTICE SETUP -->
+  <div id="setup" style="display:none">
+    <div class="card">
+      <div class="selrow">
+        <div class="label" style="margin:0">Temas</div>
+        <div class="selbtns">
+          <button class="mini" onclick="selAll(true)">Todos</button>
+          <button class="mini" onclick="selAll(false)">Ninguno</button>
+          <button class="mini" onclick="selPending()">Pendientes</button>
+        </div>
+      </div>
+      <div class="chips" id="topicChips"></div>
+      <div class="deckmeta" id="deckMeta"></div>
+    </div>
+    <div class="card">
+      <div class="label">Modo</div>
+      <div class="modes" id="modeBox">
+        <button class="mode on" data-mode="mix"><div class="ic">🎲</div><div class="nm">Mezcla</div></button>
+        <button class="mode" data-mode="flash"><div class="ic">🃏</div><div class="nm">Flashcards</div></button>
+        <button class="mode" data-mode="quiz"><div class="ic">✅</div><div class="nm">Opciones</div></button>
+        <button class="mode" data-mode="write"><div class="ic">✍️</div><div class="nm">Escribir</div></button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="label">Dirección</div>
+      <div class="dirs" id="dirBox">
+        <button class="chip small on" data-dir="both" style="text-align:center">Ambas ⇄</button>
+        <button class="chip small" data-dir="es2ar" style="text-align:center">ES → AR</button>
+        <button class="chip small" data-dir="ar2es" style="text-align:center">AR → ES</button>
+      </div>
+      <div class="label" style="margin-top:18px">Longitud</div>
+      <div class="chips" id="lenBox">
+        <button class="chip small on" data-len="10">10</button>
+        <button class="chip small" data-len="20">20</button>
+        <button class="chip small" data-len="30">30</button>
+        <button class="chip small" data-len="0">Todas</button>
+      </div>
+      <div class="vrow">
+        <span class="vlabel">🔊 Leer el árabe en voz alta</span>
+        <label class="switch"><input type="checkbox" id="voiceToggle" checked><span class="slider"></span></label>
+      </div>
+      <div class="vnote" id="vnote"></div>
+    </div>
+    <button class="start" id="startBtn" onclick="start()">Empezar</button>
+    <div class="stat" id="globalStat"></div>
+  </div>
+
+  <!-- STUDY -->
+  <div id="study" style="display:none">
+    <div class="top">
+      <button class="back" onclick="quit()">← Salir</button>
+      <div class="progress"><div class="pfill" id="pfill"></div></div>
+      <div class="counter" id="counter">1/10</div>
+    </div>
+    <div class="stage" id="stage"></div>
+  </div>
+
+  <footer>
+    Tu progreso se guarda en este dispositivo. <span class="kbd">espacio</span> voltea · <span class="kbd">1·2·3</span> califica · <span class="kbd">S</span> escucha<br>
+    Confirma con tu profe las grafías dudosas.
+  </footer>
+</div>
+
+<script>
+const VOCAB = {"Saludos y cortesía": [{"es": "La paz contigo", "ar": "السلام عليكم", "tr": "Salam Alaykom", "tag": "⚪ Común", "new": false}, {"es": "Respuesta: y contigo", "ar": "وعليكم السلام", "tr": "Wa alaykom es-salam", "tag": "⚪ Común", "new": true}, {"es": "Hola", "ar": "مرحبا", "tr": "Marhaba", "tag": "⚪ Común", "new": false}, {"es": "Buenos días", "ar": "صباح الخير", "tr": "Sabah el-jer", "tag": "⚪ Común", "new": false}, {"es": "Respuesta a buenos días", "ar": "صباح النور", "tr": "Sabah en-nur", "tag": "⚪ Común", "new": true}, {"es": "Buenas tardes/noches", "ar": "مساء الخير", "tr": "Masa el-jer", "tag": "⚪ Común", "new": false}, {"es": "¿Cómo estás?", "ar": "كيف حالك", "tr": "Kif Halek", "tag": "🇱🇧 Libanés", "new": false}, {"es": "¿Cómo estás?", "ar": "شلونك", "tr": "Shlonek", "tag": "🇰🇼 Kuwaití", "new": false}, {"es": "Bien", "ar": "منيح", "tr": "Mnih", "tag": "🇱🇧 Libanés", "new": false}, {"es": "Bien", "ar": "زين", "tr": "Zein", "tag": "🇰🇼 Kuwaití", "new": false}, {"es": "Todo bien", "ar": "كله تمام", "tr": "Kollo tamam", "tag": "⚪ Común", "new": false}, {"es": "¿Y tú?", "ar": "و انت؟", "tr": "U enta?", "tag": "⚪ Común", "new": false}, {"es": "Gracias", "ar": "شكرا", "tr": "Shukran", "tag": "⚪ Común", "new": true}, {"es": "De nada", "ar": "عفوا", "tr": "Afwan", "tag": "⚪ Común", "new": true}, {"es": "Sí", "ar": "نعم / إي", "tr": "Na3am / Ee", "tag": "⚪ Común", "new": true}, {"es": "No", "ar": "لا", "tr": "La", "tag": "⚪ Común", "new": true}, {"es": "Perdón / lo siento", "ar": "آسف", "tr": "Asef", "tag": "⚪ Común", "new": true}, {"es": "Disculpa (para llamar)", "ar": "لو سمحت", "tr": "Law samaht", "tag": "⚪ Común", "new": true}, {"es": "Si Dios quiere", "ar": "إن شاء الله", "tr": "Inshallah", "tag": "⚪ Común", "new": true}, {"es": "Gracias a Dios", "ar": "الحمد لله", "tr": "Alhamdulillah", "tag": "⚪ Común", "new": true}, {"es": "No pasa nada", "ar": "ما في مشكلة", "tr": "Ma fi mushkila", "tag": "⚪ Común", "new": true}, {"es": "Bienvenido", "ar": "أهلا وسهلا", "tr": "Ahlan wa sahlan", "tag": "⚪ Común", "new": true}, {"es": "Adiós", "ar": "مع السلامة", "tr": "Maa as-salama", "tag": "⚪ Común", "new": false}, {"es": "Nos vemos luego", "ar": "أشوفك بعدين", "tr": "Ashufek baaden", "tag": "⚪ Común", "new": false}, {"es": "¿Cómo te llamas?", "ar": "شو اسمك؟", "tr": "Shu esmek?", "tag": "🇱🇧 Libanés", "new": false}, {"es": "Mi nombre es...", "ar": "اسمي...", "tr": "Esmi...", "tag": "⚪ Común", "new": false}, {"es": "Encantado", "ar": "تشرفنا", "tr": "Tsharrafna", "tag": "⚪ Común", "new": false}, {"es": "¿Cuántos años tienes?", "ar": "كم عمرك؟", "tr": "Kam omrek?", "tag": "⚪ Común", "new": false}, {"es": "¿De dónde eres?", "ar": "من وين انت؟", "tr": "Men wen enta?", "tag": "⚪ Común", "new": false}], "Palabras clave (función)": [{"es": "Quiero", "ar": "بدي", "tr": "Baddi", "tag": "🇱🇧 Libanés", "new": false}, {"es": "Quiero", "ar": "أبي", "tr": "Abi", "tag": "🇰🇼 Kuwaití", "new": false}, {"es": "No quiero", "ar": "ما بدي", "tr": "Ma baddi", "tag": "🇱🇧 Libanés", "new": true}, {"es": "Tengo", "ar": "عندي", "tr": "Endi", "tag": "⚪ Común", "new": false}, {"es": "No tengo", "ar": "ما عندي", "tr": "Ma endi", "tag": "⚪ Común", "new": false}, {"es": "Hay", "ar": "في", "tr": "Fi", "tag": "⚪ Común", "new": true}, {"es": "No hay", "ar": "ما في", "tr": "Ma fi", "tag": "⚪ Común", "new": true}, {"es": "Mucho", "ar": "كتير", "tr": "Ktir", "tag": "🇱🇧 Libanés", "new": false}, {"es": "Mucho", "ar": "وايد", "tr": "Wayed", "tag": "🇰🇼 Kuwaití", "new": false}, {"es": "Un poco", "ar": "شوي", "tr": "Shway", "tag": "⚪ Común", "new": false}, {"es": "¿Qué?", "ar": "شو", "tr": "Shu", "tag": "🇱🇧 Libanés", "new": false}, {"es": "¿Qué?", "ar": "شنو", "tr": "Sheno", "tag": "🇰🇼 Kuwaití", "new": false}, {"es": "¿Quién?", "ar": "مين", "tr": "Min", "tag": "⚪ Común", "new": true}, {"es": "¿Dónde?", "ar": "وين", "tr": "Wen", "tag": "⚪ Común", "new": false}, {"es": "¿Cuándo?", "ar": "إيمتى / متى", "tr": "Emta", "tag": "⚪ Común", "new": true}, {"es": "¿Por qué?", "ar": "ليش", "tr": "Laish", "tag": "⚪ Común", "new": true}, {"es": "¿Cómo?", "ar": "كيف", "tr": "Kif", "tag": "⚪ Común", "new": true}, {"es": "¿Cuánto?", "ar": "كم", "tr": "Kam", "tag": "⚪ Común", "new": false}, {"es": "¿Cuánto cuesta?", "ar": "قديش / كم سعره؟", "tr": "Qaddesh / Kam si3ro?", "tag": "⚪ Común", "new": true}, {"es": "Este / esta", "ar": "هذا / هاد", "tr": "Hada / Hayda", "tag": "⚪ Común", "new": true}, {"es": "Ese / aquel", "ar": "هذاك", "tr": "Hadak", "tag": "⚪ Común", "new": true}, {"es": "Aquí", "ar": "هون", "tr": "Hon", "tag": "🇱🇧 Libanés", "new": true}, {"es": "Allí", "ar": "هناك", "tr": "Hunak", "tag": "⚪ Común", "new": true}, {"es": "Ahora", "ar": "هلق", "tr": "Halla", "tag": "🇱🇧 Libanés", "new": false}, {"es": "Después", "ar": "بعدين", "tr": "Baaden", "tag": "⚪ Común", "new": true}, {"es": "Antes", "ar": "قبل", "tr": "Qabl", "tag": "⚪ Común", "new": true}, {"es": "Mañana", "ar": "بكرة", "tr": "Bukra", "tag": "⚪ Común", "new": false}, {"es": "Ayer", "ar": "أمس", "tr": "Ams", "tag": "⚪ Común", "new": false}, {"es": "Pero", "ar": "بس", "tr": "Bas", "tag": "⚪ Común", "new": false}, {"es": "Y", "ar": "و", "tr": "Wa / U", "tag": "⚪ Común", "new": false}, {"es": "O", "ar": "أو", "tr": "Aw", "tag": "⚪ Común", "new": false}, {"es": "Porque", "ar": "لأن", "tr": "Li'anna", "tag": "⚪ Común", "new": false}, {"es": "También", "ar": "كمان", "tr": "Kaman", "tag": "⚪ Común", "new": false}, {"es": "Con", "ar": "مع", "tr": "Maa", "tag": "⚪ Común", "new": true}, {"es": "Sin", "ar": "بدون", "tr": "Bidun", "tag": "⚪ Común", "new": true}, {"es": "Muy", "ar": "كتير / وايد", "tr": "Ktir / Wayed", "tag": "⚪ Común", "new": true}, {"es": "Casi", "ar": "تقريبا", "tr": "Taqriban", "tag": "⚪ Común", "new": false}, {"es": "A veces", "ar": "أحيانا", "tr": "Ahyanan", "tag": "⚪ Común", "new": false}, {"es": "Siempre", "ar": "دائما", "tr": "Dayman", "tag": "⚪ Común", "new": false}, {"es": "Nunca", "ar": "أبدا", "tr": "Abadan", "tag": "⚪ Común", "new": false}, {"es": "Todos los días", "ar": "كل يوم", "tr": "Kul youm", "tag": "⚪ Común", "new": false}, {"es": "No puedo", "ar": "ما أقدر", "tr": "Ma agdar", "tag": "⚪ Común", "new": false}], "Números": [{"es": "Cero", "ar": "صفر", "tr": "Sifr", "tag": "⚪ Común", "new": true}, {"es": "Uno", "ar": "واحد", "tr": "Wahed", "tag": "⚪ Común", "new": true}, {"es": "Dos", "ar": "اثنين", "tr": "Tnen", "tag": "⚪ Común", "new": true}, {"es": "Tres", "ar": "ثلاثة", "tr": "Tlate", "tag": "⚪ Común", "new": true}, {"es": "Cuatro", "ar": "أربعة", "tr": "Arba3a", "tag": "⚪ Común", "new": true}, {"es": "Cinco", "ar": "خمسة", "tr": "Khamse", "tag": "⚪ Común", "new": true}, {"es": "Seis", "ar": "ستة", "tr": "Sitte", "tag": "⚪ Común", "new": true}, {"es": "Siete", "ar": "سبعة", "tr": "Sab3a", "tag": "⚪ Común", "new": true}, {"es": "Ocho", "ar": "ثمانية", "tr": "Tmanye", "tag": "⚪ Común", "new": true}, {"es": "Nueve", "ar": "تسعة", "tr": "Tis3a", "tag": "⚪ Común", "new": true}, {"es": "Diez", "ar": "عشرة", "tr": "Ashara", "tag": "⚪ Común", "new": true}, {"es": "Once", "ar": "حدعش", "tr": "Hda3sh", "tag": "⚪ Común", "new": true}, {"es": "Doce", "ar": "اطنعش", "tr": "Tna3sh", "tag": "⚪ Común", "new": true}, {"es": "Trece", "ar": "تلتعش", "tr": "Tlata3sh", "tag": "⚪ Común", "new": true}, {"es": "Catorce", "ar": "أربعتعش", "tr": "Arba3ta3sh", "tag": "⚪ Común", "new": true}, {"es": "Quince", "ar": "خمستعش", "tr": "Khamsta3sh", "tag": "⚪ Común", "new": true}, {"es": "Dieciséis", "ar": "ستعش", "tr": "Sitta3sh", "tag": "⚪ Común", "new": true}, {"es": "Diecisiete", "ar": "سبعتعش", "tr": "Saba3ta3sh", "tag": "⚪ Común", "new": true}, {"es": "Dieciocho", "ar": "تمنتعش", "tr": "Tmanta3sh", "tag": "⚪ Común", "new": true}, {"es": "Diecinueve", "ar": "تسعتعش", "tr": "Tisa3ta3sh", "tag": "⚪ Común", "new": true}, {"es": "Veinte", "ar": "عشرين", "tr": "Ishrin", "tag": "⚪ Común", "new": true}, {"es": "Treinta", "ar": "ثلاثين", "tr": "Tlatin", "tag": "⚪ Común", "new": true}, {"es": "Cuarenta", "ar": "أربعين", "tr": "Arba3in", "tag": "⚪ Común", "new": true}, {"es": "Cincuenta", "ar": "خمسين", "tr": "Khamsin", "tag": "⚪ Común", "new": true}, {"es": "Cien", "ar": "مية", "tr": "Miyye", "tag": "⚪ Común", "new": true}, {"es": "Mil", "ar": "ألف", "tr": "Alf", "tag": "⚪ Común", "new": true}, {"es": "Medio", "ar": "نص", "tr": "Nuss", "tag": "⚪ Común", "new": true}, {"es": "Primero", "ar": "أول", "tr": "Awwal", "tag": "⚪ Común", "new": true}, {"es": "Último", "ar": "آخر", "tr": "Akher", "tag": "⚪ Común", "new": true}], "Verbos": [{"es": "Comer", "ar": "آكل", "tr": "Akel", "tag": "⚪ Común", "new": false}, {"es": "Beber", "ar": "أشرب", "tr": "Ashrab", "tag": "⚪ Común", "new": false}, {"es": "Ir", "ar": "أروح", "tr": "Aruh", "tag": "⚪ Común", "new": false}, {"es": "Venir", "ar": "أجي", "tr": "Aji", "tag": "⚪ Común", "new": false}, {"es": "Ver", "ar": "أشوف", "tr": "Ashuf", "tag": "⚪ Común", "new": false}, {"es": "Querer (amar)", "ar": "أحب", "tr": "Aheb", "tag": "⚪ Común", "new": false}, {"es": "Hablar", "ar": "أحكي", "tr": "Haki", "tag": "🇱🇧 Libanés", "new": false}, {"es": "Escuchar", "ar": "أسمع", "tr": "Asma3", "tag": "⚪ Común", "new": false}, {"es": "Entender", "ar": "أفهم", "tr": "Afham", "tag": "⚪ Común", "new": false}, {"es": "Saber/conocer", "ar": "أعرف", "tr": "A3ref", "tag": "⚪ Común", "new": false}, {"es": "Poder", "ar": "أقدر", "tr": "Agdar", "tag": "⚪ Común", "new": false}, {"es": "Hacer", "ar": "أسوي", "tr": "Asawwi", "tag": "🇰🇼 Kuwaití", "new": false}, {"es": "Comprar", "ar": "أشتري", "tr": "Ashteri", "tag": "⚪ Común", "new": false}, {"es": "Trabajar", "ar": "أشتغل", "tr": "Ashteghel", "tag": "⚪ Común", "new": false}, {"es": "Estudiar", "ar": "أدرس", "tr": "Adres", "tag": "⚪ Común", "new": false}, {"es": "Leer", "ar": "أقرأ", "tr": "Agra", "tag": "⚪ Común", "new": false}, {"es": "Escribir", "ar": "أكتب", "tr": "Akteb", "tag": "⚪ Común", "new": false}, {"es": "Dormir", "ar": "أنام", "tr": "Anam", "tag": "⚪ Común", "new": false}, {"es": "Salir", "ar": "أطلع", "tr": "Atla'", "tag": "⚪ Común", "new": false}, {"es": "Entrar", "ar": "أدخل", "tr": "Adkhul", "tag": "⚪ Común", "new": false}, {"es": "Esperar", "ar": "أنتظر", "tr": "Astanna", "tag": "⚪ Común", "new": false}, {"es": "Llegar", "ar": "أوصل", "tr": "Wasal", "tag": "⚪ Común", "new": false}, {"es": "Necesitar", "ar": "أحتاج", "tr": "Ahtaj", "tag": "⚪ Común", "new": false}, {"es": "Buscar", "ar": "أدور", "tr": "Adawwir", "tag": "⚪ Común", "new": false}, {"es": "Encontrar", "ar": "ألاقي", "tr": "Alaqi", "tag": "⚪ Común", "new": false}, {"es": "Pedir", "ar": "أطلب", "tr": "Atlob", "tag": "⚪ Común", "new": false}, {"es": "Pagar", "ar": "أدفع", "tr": "Adaf", "tag": "⚪ Común", "new": false}, {"es": "Abrir", "ar": "أفتح", "tr": "Aftah", "tag": "⚪ Común", "new": false}, {"es": "Cerrar", "ar": "أسكر", "tr": "Sakkir", "tag": "⚪ Común", "new": false}, {"es": "Dar", "ar": "أعطي", "tr": "A3ti", "tag": "⚪ Común", "new": true}, {"es": "Coger/llevar", "ar": "آخذ", "tr": "Akhud", "tag": "⚪ Común", "new": false}, {"es": "Traer", "ar": "أجيب", "tr": "Jab", "tag": "⚪ Común", "new": false}, {"es": "Decir", "ar": "أقول", "tr": "Aqul", "tag": "⚪ Común", "new": true}, {"es": "Preguntar", "ar": "أسأل", "tr": "As'al", "tag": "⚪ Común", "new": false}, {"es": "Responder", "ar": "أجاوب", "tr": "Ajawib", "tag": "⚪ Común", "new": false}, {"es": "Ayudar", "ar": "أساعد", "tr": "Asa'id", "tag": "⚪ Común", "new": false}, {"es": "Empezar", "ar": "أبلش", "tr": "Ballash", "tag": "🇱🇧 Libanés", "new": false}, {"es": "Terminar", "ar": "أخلص", "tr": "Khallas", "tag": "⚪ Común", "new": false}, {"es": "Llamar (tel.)", "ar": "أتصل", "tr": "Attasel", "tag": "⚪ Común", "new": false}, {"es": "Pensar", "ar": "أفكر", "tr": "Afakkar", "tag": "⚪ Común", "new": false}, {"es": "Conocer (saber)", "ar": "أعرف", "tr": "A3ref", "tag": "⚪ Común", "new": false}, {"es": "Vivir", "ar": "أعيش", "tr": "A3ish", "tag": "⚪ Común", "new": true}, {"es": "Costar", "ar": "يكلف", "tr": "Yiklif", "tag": "⚪ Común", "new": true}, {"es": "Gustar (me gusta)", "ar": "يعجبني", "tr": "Ye3jibni", "tag": "⚪ Común", "new": true}, {"es": "Levantarse", "ar": "أقوم", "tr": "Aqum", "tag": "⚪ Común", "new": true}, {"es": "Despertarse", "ar": "أفيق", "tr": "Afig", "tag": "⚪ Común", "new": true}, {"es": "Ducharse", "ar": "أستحم", "tr": "Astahimm", "tag": "⚪ Común", "new": true}, {"es": "Vestirse", "ar": "ألبس", "tr": "Albes", "tag": "⚪ Común", "new": true}, {"es": "Desayunar", "ar": "أفطر", "tr": "Aftar", "tag": "⚪ Común", "new": true}, {"es": "Cenar", "ar": "أتعشى", "tr": "Ata3asha", "tag": "⚪ Común", "new": true}, {"es": "Cocinar", "ar": "أطبخ", "tr": "Atboj", "tag": "⚪ Común", "new": true}, {"es": "Sentarse", "ar": "أقعد", "tr": "Aq3od", "tag": "⚪ Común", "new": true}, {"es": "Andar / caminar", "ar": "أمشي", "tr": "Amshi", "tag": "⚪ Común", "new": true}, {"es": "Conducir", "ar": "أسوق", "tr": "Asuq", "tag": "⚪ Común", "new": true}, {"es": "Correr", "ar": "أركض", "tr": "Arkod", "tag": "⚪ Común", "new": true}, {"es": "Parar", "ar": "أوقف", "tr": "Awqaf", "tag": "⚪ Común", "new": true}, {"es": "Usar", "ar": "أستعمل", "tr": "Asta3mil", "tag": "⚪ Común", "new": true}, {"es": "Recordar", "ar": "أتذكر", "tr": "Atzakkar", "tag": "⚪ Común", "new": true}, {"es": "Olvidar", "ar": "أنسى", "tr": "Ansa", "tag": "⚪ Común", "new": true}, {"es": "Aprender", "ar": "أتعلم", "tr": "Ataallam", "tag": "⚪ Común", "new": true}, {"es": "Enseñar", "ar": "أعلّم", "tr": "A3allem", "tag": "⚪ Común", "new": true}, {"es": "Repetir", "ar": "أعيد", "tr": "A3id", "tag": "⚪ Común", "new": true}, {"es": "Cambiar", "ar": "أغيّر", "tr": "Aghayyer", "tag": "⚪ Común", "new": true}, {"es": "Empujar", "ar": "أدفع", "tr": "Adfa3", "tag": "⚪ Común", "new": true}, {"es": "Tirar (de algo)", "ar": "أسحب", "tr": "As-hab", "tag": "⚪ Común", "new": true}, {"es": "Poner", "ar": "أحط", "tr": "Ahot", "tag": "⚪ Común", "new": true}, {"es": "Quitar", "ar": "أشيل", "tr": "Ashil", "tag": "⚪ Común", "new": true}, {"es": "Mandar / enviar", "ar": "أبعت", "tr": "Ab3at", "tag": "⚪ Común", "new": true}, {"es": "Recibir", "ar": "أستلم", "tr": "Astalem", "tag": "⚪ Común", "new": true}, {"es": "Mostrar", "ar": "أوري", "tr": "Awarri", "tag": "⚪ Común", "new": true}, {"es": "Probar (intentar)", "ar": "أجرّب", "tr": "Ajarreb", "tag": "⚪ Común", "new": true}, {"es": "Reservar", "ar": "أحجز", "tr": "Ahjez", "tag": "⚪ Común", "new": true}, {"es": "Reparar / arreglar", "ar": "أصلّح", "tr": "Asalleh", "tag": "⚪ Común", "new": true}, {"es": "Limpiar", "ar": "أنظّف", "tr": "Anaddef", "tag": "⚪ Común", "new": true}, {"es": "Lavar", "ar": "أغسل", "tr": "Aghsel", "tag": "⚪ Común", "new": true}, {"es": "Descansar", "ar": "أرتاح", "tr": "Artah", "tag": "⚪ Común", "new": true}, {"es": "Jugar", "ar": "ألعب", "tr": "Al3ab", "tag": "⚪ Común", "new": true}, {"es": "Reír", "ar": "أضحك", "tr": "Adhak", "tag": "⚪ Común", "new": true}, {"es": "Llorar", "ar": "أبكي", "tr": "Abki", "tag": "⚪ Común", "new": true}, {"es": "Cantar", "ar": "أغني", "tr": "Aghanni", "tag": "⚪ Común", "new": true}, {"es": "Bailar", "ar": "أرقص", "tr": "Argos", "tag": "⚪ Común", "new": true}, {"es": "Viajar", "ar": "أسافر", "tr": "Asafer", "tag": "⚪ Común", "new": true}, {"es": "Volver / regresar", "ar": "أرجع", "tr": "Arja3", "tag": "⚪ Común", "new": true}, {"es": "Quedarse", "ar": "أبقى", "tr": "Abqa", "tag": "⚪ Común", "new": true}, {"es": "Entender / darse cuenta", "ar": "أنتبه", "tr": "Antabeh", "tag": "⚪ Común", "new": true}, {"es": "Creer / pensar", "ar": "أعتقد", "tr": "A3taqed", "tag": "⚪ Común", "new": true}, {"es": "Sentir", "ar": "أحس", "tr": "Ahess", "tag": "⚪ Común", "new": true}, {"es": "Necesitar / querer (deber)", "ar": "لازم", "tr": "Lazem", "tag": "⚪ Común", "new": true}, {"es": "Deber (tener que)", "ar": "يجب", "tr": "Yajib", "tag": "⚪ Común", "new": true}, {"es": "Preferir", "ar": "أفضّل", "tr": "Afaddel", "tag": "⚪ Común", "new": true}, {"es": "Elegir", "ar": "أختار", "tr": "Akhtar", "tag": "⚪ Común", "new": true}, {"es": "Conocer (a alguien)", "ar": "أتعرّف", "tr": "Ata3arraf", "tag": "⚪ Común", "new": true}, {"es": "Visitar", "ar": "أزور", "tr": "Azur", "tag": "⚪ Común", "new": true}, {"es": "Invitar", "ar": "أعزم", "tr": "A3zem", "tag": "⚪ Común", "new": true}, {"es": "Saludar", "ar": "أسلّم", "tr": "Asallem", "tag": "⚪ Común", "new": true}, {"es": "Despedirse", "ar": "أودّع", "tr": "Awadde3", "tag": "⚪ Común", "new": true}, {"es": "Contar (relatar)", "ar": "أحكي", "tr": "Ahki", "tag": "⚪ Común", "new": true}, {"es": "Contar (números)", "ar": "أعدّ", "tr": "A3edd", "tag": "⚪ Común", "new": true}, {"es": "Mirar", "ar": "أبصّ", "tr": "Aboss", "tag": "⚪ Común", "new": true}, {"es": "Sentir / oír (notar)", "ar": "أشعر", "tr": "Ash3or", "tag": "⚪ Común", "new": true}, {"es": "Subir", "ar": "أطلع", "tr": "Atla3", "tag": "⚪ Común", "new": true}, {"es": "Bajar", "ar": "أنزل", "tr": "Anzel", "tag": "⚪ Común", "new": true}, {"es": "Cortar", "ar": "أقطع", "tr": "Aqta3", "tag": "⚪ Común", "new": true}, {"es": "Comprar / pagar la cuenta", "ar": "أحاسب", "tr": "Ahaseb", "tag": "⚪ Común", "new": true}, {"es": "Funcionar", "ar": "يشتغل", "tr": "Yeshteghel", "tag": "⚪ Común", "new": true}, {"es": "Doler", "ar": "يوجع", "tr": "Yuja3", "tag": "⚪ Común", "new": true}, {"es": "Gastar (dinero)", "ar": "أصرف", "tr": "Asref", "tag": "⚪ Común", "new": true}, {"es": "Ganar (dinero)", "ar": "أكسب", "tr": "Aksab", "tag": "⚪ Común", "new": true}, {"es": "Ahorrar", "ar": "أوفّر", "tr": "Awaffer", "tag": "⚪ Común", "new": true}], "Comida y bebida": [{"es": "Comida", "ar": "أكل", "tr": "Akel", "tag": "⚪ Común", "new": false}, {"es": "Desayuno", "ar": "فطور", "tr": "Ftur", "tag": "⚪ Común", "new": false}, {"es": "Almuerzo", "ar": "غدا", "tr": "Ghada", "tag": "⚪ Común", "new": true}, {"es": "Cena", "ar": "عشاء", "tr": "Asha", "tag": "⚪ Común", "new": false}, {"es": "Restaurante", "ar": "مطعم", "tr": "Mat3am", "tag": "⚪ Común", "new": false}, {"es": "Agua", "ar": "مي", "tr": "Mai", "tag": "⚪ Común", "new": false}, {"es": "Café", "ar": "قهوة", "tr": "Gajwa", "tag": "⚪ Común", "new": false}, {"es": "Té", "ar": "شاي", "tr": "Shai", "tag": "⚪ Común", "new": false}, {"es": "Pan", "ar": "خبز", "tr": "Khubez", "tag": "⚪ Común", "new": false}, {"es": "Queso", "ar": "جبنة", "tr": "Jibneh", "tag": "⚪ Común", "new": false}, {"es": "Huevos", "ar": "بيض", "tr": "Bayd", "tag": "⚪ Común", "new": false}, {"es": "Arroz", "ar": "رز", "tr": "Riz", "tag": "⚪ Común", "new": false}, {"es": "Carne", "ar": "لحم", "tr": "Lahm", "tag": "⚪ Común", "new": false}, {"es": "Pollo", "ar": "دجاج", "tr": "Djaj", "tag": "⚪ Común", "new": true}, {"es": "Pescado", "ar": "سمك", "tr": "Samak", "tag": "⚪ Común", "new": true}, {"es": "Verduras", "ar": "خضار", "tr": "Khodar", "tag": "⚪ Común", "new": false}, {"es": "Fruta", "ar": "فواكه", "tr": "Fawakeh", "tag": "⚪ Común", "new": false}, {"es": "Sal", "ar": "ملح", "tr": "Milh", "tag": "⚪ Común", "new": false}, {"es": "Azúcar", "ar": "سكر", "tr": "Sukkar", "tag": "⚪ Común", "new": true}, {"es": "Delicioso", "ar": "لذيذ", "tr": "Laziz", "tag": "⚪ Común", "new": false}, {"es": "Hambre", "ar": "جوعان", "tr": "Ju3an", "tag": "⚪ Común", "new": false}, {"es": "Sed", "ar": "عطشان", "tr": "3atshan", "tag": "⚪ Común", "new": false}, {"es": "La cuenta, por favor", "ar": "الحساب لو سمحت", "tr": "El-hisab law samaht", "tag": "⚪ Común", "new": true}, {"es": "Plato", "ar": "صحن", "tr": "Sahn", "tag": "⚪ Común", "new": false}, {"es": "Vaso", "ar": "كوب", "tr": "Kub", "tag": "⚪ Común", "new": false}], "Casa y objetos": [{"es": "Casa", "ar": "بيت", "tr": "Bait", "tag": "⚪ Común", "new": false}, {"es": "Habitación", "ar": "غرفة", "tr": "Ghurfa", "tag": "⚪ Común", "new": false}, {"es": "Baño", "ar": "حمام", "tr": "Hammam", "tag": "⚪ Común", "new": true}, {"es": "Cocina", "ar": "مطبخ", "tr": "Matbakh", "tag": "⚪ Común", "new": true}, {"es": "Puerta", "ar": "باب", "tr": "Bab", "tag": "⚪ Común", "new": true}, {"es": "Llave", "ar": "مفتاح", "tr": "Muftah", "tag": "⚪ Común", "new": true}, {"es": "Cama", "ar": "سرير", "tr": "Sarir", "tag": "⚪ Común", "new": true}, {"es": "Silla", "ar": "كرسي", "tr": "Kursi", "tag": "⚪ Común", "new": true}, {"es": "Mesa", "ar": "طاولة", "tr": "Tawle", "tag": "⚪ Común", "new": false}, {"es": "Ventana", "ar": "شباك", "tr": "Shubbak", "tag": "⚪ Común", "new": false}, {"es": "Teléfono", "ar": "جوال", "tr": "Jawwal", "tag": "⚪ Común", "new": false}, {"es": "Dinero", "ar": "فلوس", "tr": "Flus", "tag": "⚪ Común", "new": true}, {"es": "Coche", "ar": "سيارة", "tr": "Sayara", "tag": "⚪ Común", "new": false}, {"es": "Ropa", "ar": "ملابس", "tr": "Malabes", "tag": "⚪ Común", "new": false}, {"es": "Zapatos", "ar": "صباط", "tr": "Sbat", "tag": "⚪ Común", "new": false}, {"es": "Bolsa", "ar": "كيس", "tr": "Kis", "tag": "⚪ Común", "new": false}, {"es": "Mochila", "ar": "شنطة", "tr": "Shanta", "tag": "⚪ Común", "new": false}, {"es": "Luz", "ar": "ضو", "tr": "Daw", "tag": "⚪ Común", "new": true}, {"es": "Aire acondicionado", "ar": "مكيف", "tr": "Mukayyef", "tag": "⚪ Común", "new": true}], "Personas y familia": [{"es": "Mi familia", "ar": "أهلي", "tr": "Ahli", "tag": "⚪ Común", "new": false}, {"es": "Padre", "ar": "أبو / بابا", "tr": "Abu / Baba", "tag": "⚪ Común", "new": true}, {"es": "Madre", "ar": "أم / ماما", "tr": "Umm / Mama", "tag": "⚪ Común", "new": true}, {"es": "Hermano", "ar": "أخ", "tr": "Aj", "tag": "⚪ Común", "new": false}, {"es": "Hermana", "ar": "أخت", "tr": "Ukht", "tag": "⚪ Común", "new": true}, {"es": "Hijo", "ar": "ابن", "tr": "Ibn", "tag": "⚪ Común", "new": true}, {"es": "Hija", "ar": "بنت", "tr": "Bint", "tag": "⚪ Común", "new": true}, {"es": "Marido", "ar": "زوج", "tr": "Zoj", "tag": "⚪ Común", "new": true}, {"es": "Esposa", "ar": "زوجة", "tr": "Zoje", "tag": "⚪ Común", "new": true}, {"es": "Amigo", "ar": "صديق", "tr": "Sadiq", "tag": "⚪ Común", "new": false}, {"es": "Amigo cercano", "ar": "رفيق", "tr": "Rafiq", "tag": "⚪ Común", "new": false}, {"es": "Gente", "ar": "ناس", "tr": "Naas", "tag": "⚪ Común", "new": false}, {"es": "Hombre", "ar": "رجل", "tr": "Rajul", "tag": "⚪ Común", "new": true}, {"es": "Mujer", "ar": "امرأة / مرة", "tr": "Mara", "tag": "⚪ Común", "new": true}, {"es": "Niño", "ar": "ولد", "tr": "Walad", "tag": "⚪ Común", "new": true}, {"es": "Soltero", "ar": "أعزب", "tr": "Azeb", "tag": "⚪ Común", "new": false}, {"es": "Casado", "ar": "متزوج", "tr": "Metzawwij", "tag": "⚪ Común", "new": false}], "Adjetivos y estados": [{"es": "Nuevo", "ar": "جديد", "tr": "Jadid", "tag": "⚪ Común", "new": false}, {"es": "Viejo", "ar": "قديم", "tr": "Qadeem", "tag": "⚪ Común", "new": false}, {"es": "Grande", "ar": "كبير", "tr": "Kbir", "tag": "⚪ Común", "new": false}, {"es": "Pequeño", "ar": "صغير", "tr": "Saghir", "tag": "⚪ Común", "new": false}, {"es": "Bueno", "ar": "منيح / زين", "tr": "Mnih / Zein", "tag": "⚪ Común", "new": true}, {"es": "Malo", "ar": "سيء / مو زين", "tr": "Sayyi", "tag": "⚪ Común", "new": true}, {"es": "Fácil", "ar": "سهل", "tr": "Sahl", "tag": "⚪ Común", "new": false}, {"es": "Difícil", "ar": "صعب", "tr": "Sa3b", "tag": "⚪ Común", "new": false}, {"es": "Rápido", "ar": "سريع", "tr": "Sari3", "tag": "⚪ Común", "new": false}, {"es": "Lento", "ar": "بطيء", "tr": "Bati", "tag": "⚪ Común", "new": false}, {"es": "Bonito", "ar": "حلو / جميل", "tr": "Helo / Jamil", "tag": "⚪ Común", "new": false}, {"es": "Feo", "ar": "شين", "tr": "Shain", "tag": "⚪ Común", "new": false}, {"es": "Caro", "ar": "غالي", "tr": "Ghaali", "tag": "⚪ Común", "new": false}, {"es": "Barato", "ar": "رخيص", "tr": "Rkhiis", "tag": "⚪ Común", "new": false}, {"es": "Feliz", "ar": "مبسوط", "tr": "Mabsut", "tag": "⚪ Común", "new": false}, {"es": "Triste", "ar": "زعلان", "tr": "Za3lan", "tag": "⚪ Común", "new": false}, {"es": "Cansado", "ar": "تعبان", "tr": "Ta3ban", "tag": "⚪ Común", "new": false}, {"es": "Caliente", "ar": "حار / سخن", "tr": "Har / Sukhn", "tag": "⚪ Común", "new": true}, {"es": "Frío", "ar": "بارد", "tr": "Barid", "tag": "⚪ Común", "new": true}, {"es": "Cerca", "ar": "قريب", "tr": "Qarib", "tag": "⚪ Común", "new": false}, {"es": "Lejos", "ar": "بعيد", "tr": "Ba3id", "tag": "⚪ Común", "new": false}, {"es": "Lleno", "ar": "مليان", "tr": "Malyan", "tag": "⚪ Común", "new": false}, {"es": "Vacío", "ar": "فاضي", "tr": "Fadhi", "tag": "⚪ Común", "new": false}, {"es": "Mismo / igual", "ar": "نفس", "tr": "Nafs", "tag": "⚪ Común", "new": true}, {"es": "Diferente", "ar": "مختلف", "tr": "Mukhtalef", "tag": "⚪ Común", "new": true}], "Lugares y direcciones": [{"es": "Calle", "ar": "شارع", "tr": "Share3", "tag": "⚪ Común", "new": true}, {"es": "Ciudad", "ar": "مدينة", "tr": "Madina", "tag": "⚪ Común", "new": false}, {"es": "País", "ar": "بلد", "tr": "Balad", "tag": "⚪ Común", "new": false}, {"es": "Mercado", "ar": "سوق", "tr": "Suq", "tag": "⚪ Común", "new": false}, {"es": "Supermercado", "ar": "بقالة", "tr": "Baqala", "tag": "⚪ Común", "new": false}, {"es": "Centro comercial", "ar": "مول", "tr": "Mall", "tag": "⚪ Común", "new": true}, {"es": "Farmacia", "ar": "صيدلية", "tr": "Saydaliye", "tag": "⚪ Común", "new": false}, {"es": "Hospital", "ar": "مستشفى", "tr": "Mustashfa", "tag": "⚪ Común", "new": true}, {"es": "Banco", "ar": "بنك", "tr": "Bank", "tag": "⚪ Común", "new": true}, {"es": "Aeropuerto", "ar": "مطار", "tr": "Mataar", "tag": "⚪ Común", "new": true}, {"es": "Hotel", "ar": "فندق", "tr": "Funduq", "tag": "⚪ Común", "new": false}, {"es": "Mar", "ar": "بحر", "tr": "Bahr", "tag": "⚪ Común", "new": false}, {"es": "Playa", "ar": "شط", "tr": "Shatt", "tag": "⚪ Común", "new": false}, {"es": "Parking", "ar": "موقف", "tr": "Mawqaf", "tag": "⚪ Común", "new": false}, {"es": "Entrada", "ar": "مدخل", "tr": "Madkhal", "tag": "⚪ Común", "new": false}, {"es": "Salida", "ar": "مخرج", "tr": "Makhraj", "tag": "⚪ Común", "new": false}, {"es": "Derecha", "ar": "يمين", "tr": "Yamin", "tag": "⚪ Común", "new": true}, {"es": "Izquierda", "ar": "يسار / شمال", "tr": "Yasar / Shmal", "tag": "⚪ Común", "new": true}, {"es": "Recto", "ar": "دغري", "tr": "Dughri", "tag": "⚪ Común", "new": true}, {"es": "Cerca de aquí", "ar": "قريب من هون", "tr": "Qarib men hon", "tag": "⚪ Común", "new": true}], "Tiempo y colores": [{"es": "Hoy", "ar": "اليوم", "tr": "Alyoum", "tag": "⚪ Común", "new": false}, {"es": "Mañana (día)", "ar": "بكرة", "tr": "Bukra", "tag": "⚪ Común", "new": false}, {"es": "Ayer", "ar": "أمس", "tr": "Ams", "tag": "⚪ Común", "new": false}, {"es": "Día", "ar": "يوم", "tr": "Youm", "tag": "⚪ Común", "new": false}, {"es": "Noche", "ar": "ليل", "tr": "Leil", "tag": "⚪ Común", "new": false}, {"es": "Semana", "ar": "أسبوع", "tr": "Usbu3", "tag": "⚪ Común", "new": false}, {"es": "Mes", "ar": "شهر", "tr": "Shaher", "tag": "⚪ Común", "new": false}, {"es": "Año", "ar": "سنة", "tr": "Séne", "tag": "⚪ Común", "new": false}, {"es": "Hora", "ar": "ساعة", "tr": "Sa3a", "tag": "⚪ Común", "new": false}, {"es": "Minuto", "ar": "دقيقة", "tr": "Daqiqa", "tag": "⚪ Común", "new": false}, {"es": "Lunes", "ar": "الاثنين", "tr": "El-itnen", "tag": "⚪ Común", "new": true}, {"es": "Martes", "ar": "الثلاثاء", "tr": "Et-talata", "tag": "⚪ Común", "new": true}, {"es": "Miércoles", "ar": "الأربعاء", "tr": "El-arba3a", "tag": "⚪ Común", "new": true}, {"es": "Jueves", "ar": "الخميس", "tr": "El-khamis", "tag": "⚪ Común", "new": true}, {"es": "Viernes", "ar": "الجمعة", "tr": "El-jum3a", "tag": "⚪ Común", "new": true}, {"es": "Sábado", "ar": "السبت", "tr": "Es-sabt", "tag": "⚪ Común", "new": true}, {"es": "Domingo", "ar": "الأحد", "tr": "El-ahad", "tag": "⚪ Común", "new": true}, {"es": "Por la mañana", "ar": "الصبح", "tr": "Es-sobh", "tag": "⚪ Común", "new": true}, {"es": "Por la tarde", "ar": "بعد الظهر", "tr": "Baad ed-duhr", "tag": "⚪ Común", "new": true}, {"es": "Por la noche", "ar": "بالليل", "tr": "Bel-leil", "tag": "⚪ Común", "new": true}, {"es": "Rojo", "ar": "أحمر", "tr": "Ahmar", "tag": "⚪ Común", "new": false}, {"es": "Azul", "ar": "أزرق", "tr": "Azraq", "tag": "⚪ Común", "new": false}, {"es": "Verde", "ar": "أخضر", "tr": "Ajdar", "tag": "⚪ Común", "new": false}, {"es": "Negro", "ar": "أسود", "tr": "Aswad", "tag": "⚪ Común", "new": false}, {"es": "Blanco", "ar": "أبيض", "tr": "Abyad", "tag": "⚪ Común", "new": false}], "Cuerpo y salud": [{"es": "Cabeza", "ar": "رأس", "tr": "Ras", "tag": "⚪ Común", "new": false}, {"es": "Ojo", "ar": "عين", "tr": "Ain", "tag": "⚪ Común", "new": false}, {"es": "Mano", "ar": "يد", "tr": "Id", "tag": "⚪ Común", "new": false}, {"es": "Pelo", "ar": "شعر", "tr": "Shaeri", "tag": "⚪ Común", "new": false}, {"es": "Cara", "ar": "وجه", "tr": "Wijh", "tag": "⚪ Común", "new": true}, {"es": "Boca", "ar": "فم / تم", "tr": "Tum", "tag": "⚪ Común", "new": true}, {"es": "Diente", "ar": "سن", "tr": "Sen", "tag": "⚪ Común", "new": true}, {"es": "Estómago", "ar": "بطن", "tr": "Batn", "tag": "⚪ Común", "new": true}, {"es": "Pierna", "ar": "رجل", "tr": "Rijl", "tag": "⚪ Común", "new": true}, {"es": "Espalda", "ar": "ظهر", "tr": "Daher", "tag": "⚪ Común", "new": true}, {"es": "Me duele...", "ar": "يوجعني", "tr": "Yuja3ni", "tag": "⚪ Común", "new": true}], "Frases útiles": [{"es": "¿Hablas inglés?", "ar": "تحكي انجليزي؟", "tr": "Tehki inglizi?", "tag": "⚪ Común", "new": true}, {"es": "No entiendo", "ar": "ما فهمت", "tr": "Ma fhimt", "tag": "⚪ Común", "new": true}, {"es": "¿Puedes repetir?", "ar": "ممكن تعيد؟", "tr": "Mumken t3id?", "tag": "⚪ Común", "new": true}, {"es": "Despacio, por favor", "ar": "بشويش لو سمحت", "tr": "Bishwesh law samaht", "tag": "⚪ Común", "new": true}, {"es": "¿Qué significa...?", "ar": "شو يعني...؟", "tr": "Shu yaani...?", "tag": "⚪ Común", "new": true}, {"es": "No sé", "ar": "ما بعرف", "tr": "Ma ba3ref", "tag": "⚪ Común", "new": true}, {"es": "¿Dónde está el baño?", "ar": "وين الحمام؟", "tr": "Wen el-hammam?", "tag": "⚪ Común", "new": true}, {"es": "Estoy aprendiendo árabe", "ar": "أنا بتعلم عربي", "tr": "Ana bataallam arabi", "tag": "⚪ Común", "new": true}, {"es": "Hablo un poco de árabe", "ar": "بحكي شوي عربي", "tr": "Bahki shway arabi", "tag": "⚪ Común", "new": false}, {"es": "Quiero café o té", "ar": "أريد قهوة أو شاي", "tr": "Ooreedo gajwa aw shai", "tag": "⚪ Común", "new": false}, {"es": "¿Cuánto cuesta esto?", "ar": "قديش هذا؟", "tr": "Qaddesh hada?", "tag": "⚪ Común", "new": true}, {"es": "Está muy caro", "ar": "غالي كتير", "tr": "Ghaali ktir", "tag": "⚪ Común", "new": true}, {"es": "La cuenta, por favor", "ar": "الحساب لو سمحت", "tr": "El-hisab law samaht", "tag": "⚪ Común", "new": true}, {"es": "Mañana voy al mercado", "ar": "بكرة أروح السوق", "tr": "Bukra aruh as-suq", "tag": "⚪ Común", "new": false}, {"es": "Tengo dinero y quiero comprar ropa", "ar": "عندي فلوس و بدي أشتري لبس", "tr": "Endi flus wa baddi ashteri libes", "tag": "⚪ Común", "new": false}, {"es": "Estoy cansado, hoy tengo mucho trabajo", "ar": "أنا تعبان، اليوم عندي شغل كتير", "tr": "Ana ta3ban, alyoum endi shughel ktir", "tag": "⚪ Común", "new": false}, {"es": "Me gusta la fruta más que la verdura", "ar": "أحب الفواكه أكثر من الخضرة", "tr": "Aheb el-fawakeh akthar men el-khodra", "tag": "⚪ Común", "new": false}, {"es": "¿Qué sueles escuchar?", "ar": "شنو تسمع عادة؟", "tr": "Sheno tesma3 adatan?", "tag": "🇰🇼 Kuwaití", "new": false}, {"es": "Encantado de conocerte", "ar": "تشرفت بمعرفتك", "tr": "Tsharraft b-ma3riftak", "tag": "⚪ Común", "new": true}], "Gimnasio y peluquería": [{"es": "¿Está libre?", "ar": "هذا فاضي؟", "tr": "Hada fadhi?", "tag": "⚪ Común", "new": false}, {"es": "¿Me ayudas?", "ar": "تساعدني؟", "tr": "Tsa3edni?", "tag": "⚪ Común", "new": false}, {"es": "Necesito tu ayuda", "ar": "أحتاج مساعدة", "tr": "Ahtaj musa3ada", "tag": "⚪ Común", "new": false}, {"es": "¿Podemos alternar?", "ar": "ممكن نبدل؟", "tr": "Mumken nbaddel?", "tag": "⚪ Común", "new": false}, {"es": "Quiero cortarme el pelo", "ar": "بدي أقص شعري", "tr": "Baddi agos shaeri", "tag": "⚪ Común", "new": false}, {"es": "Solo las puntas", "ar": "بس الأطراف", "tr": "Bas el-atraf", "tag": "⚪ Común", "new": true}, {"es": "La barba con cuchilla", "ar": "اللحية بالشفرة", "tr": "El-lehya bel-shafra", "tag": "⚪ Común", "new": false}, {"es": "Como siempre", "ar": "مثل كل مرة", "tr": "Mezel kel marra", "tag": "⚪ Común", "new": false}, {"es": "Para hacer deporte", "ar": "عشان أسوي رياضة", "tr": "Ashan asawwe riyada", "tag": "🇰🇼 Kuwaití", "new": false}, {"es": "Jugar al fútbol", "ar": "ألعب كرة", "tr": "Al3ab kura", "tag": "⚪ Común", "new": false}]};
+const TOPICS = Object.keys(VOCAB);
+const TAGMAP = {'🇱🇧 Libanés':'lb','🇰🇼 Kuwaití':'kw','⚪ Común':'com'};
+const TAGSHORT = {'lb':'🇱🇧 LB','kw':'🇰🇼 KW','com':'⚪'};
+const DAY=86400000;
+
+let sel = new Set(TOPICS);
+let mode='mix', dir='both', len=10, voiceOn=true;
+let deck=[], idx=0, score={ok:0,mid:0,no:0};
+let srsMode=false;
+
+/* ---------- VOICE ---------- */
+let arVoice=null;
+function pickVoice(){
+  const vs=speechSynthesis.getVoices();
+  arVoice=vs.find(v=>/ar/i.test(v.lang))||null;
+  const note=document.getElementById('vnote');
+  if(note)note.textContent=arVoice?('Voz detectada: '+arVoice.name+'. Toca el altavoz para oír cualquier palabra.'):'Tu dispositivo no tiene voz árabe instalada. En iOS: Ajustes › Accesibilidad › Contenido leído › Voces › Árabe. En Android: Ajustes › Idiomas › Texto a voz.';
+}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+function speak(text){if(!('speechSynthesis' in window)||!text)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);if(arVoice){u.voice=arVoice;u.lang=arVoice.lang}else u.lang='ar';u.rate=.85;speechSynthesis.speak(u)}
+
+/* ---------- PROGRESS + SRS ----------
+   Cada palabra guarda: {s:'ok|mid|no', box:0..5, due:timestamp}
+   Repetición espaciada (Leitner): aciertos suben de caja y alejan el repaso,
+   fallos vuelven a caja baja y lo acercan. Intervalos por caja (días): 0,1,2,4,8,16
+*/
+const PKEY='yalla_progress_v2';
+const INTERVALS=[0,1,2,4,8,16];
+function loadProg(){try{return JSON.parse(localStorage.getItem(PKEY))||{}}catch(e){return {}}}
+function saveProg(p){try{localStorage.setItem(PKEY,JSON.stringify(p))}catch(e){}}
+function wordKey(w){return w.tr+'|'+w.es}
+function getRec(w){return loadProg()[wordKey(w)]||null}
+function getStatus(w){const r=getRec(w);return r?r.s:null}
+function updateRec(w,result){
+  // result: 'ok' | 'mid' | 'no'
+  const p=loadProg();const k=wordKey(w);const cur=p[k]||{box:0};
+  let box=cur.box||0;
+  if(result==='ok')box=Math.min(box+1,INTERVALS.length-1);
+  else if(result==='mid')box=Math.max(box,1);
+  else box=0;
+  const due=Date.now()+INTERVALS[box]*DAY;
+  p[k]={s:result,box:box,due:due};
+  saveProg(p);
+  if(curTab==='explore')renderExplore();
+}
+function markKnown(w){ // botón directo "ya la sé" desde Explorar -> caja alta
+  const p=loadProg();const k=wordKey(w);
+  p[k]={s:'ok',box:INTERVALS.length-1,due:Date.now()+INTERVALS[INTERVALS.length-1]*DAY};
+  saveProg(p);renderExplore();
+}
+function dueWords(){
+  const p=loadProg();const now=Date.now();const out=[];
+  TOPICS.forEach(t=>VOCAB[t].forEach(w=>{const r=p[wordKey(w)];if(r&&r.due&&r.due<=now)out.push({...w,topic:t})}));
+  return out;
+}
+
+/* ---------- TABS ---------- */
+let curTab='explore';
+document.querySelectorAll('#tabs .tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('#tabs .tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');
+  curTab=t.dataset.tab;
+  document.getElementById('explore').style.display=curTab==='explore'?'block':'none';
+  document.getElementById('setup').style.display=curTab==='practice'?'block':'none';
+  document.getElementById('study').style.display='none';
+  if(curTab==='explore')renderExplore();else{globalStat();updateMeta()}
+});
+
+/* ---------- SRS BANNER ---------- */
+function renderSRS(){
+  const due=dueWords();const b=document.getElementById('srsBanner');
+  const p=loadProg();const started=Object.keys(p).length>0;
+  if(!started){b.style.display='none';return}
+  b.style.display='block';
+  if(due.length>0){
+    b.innerHTML='<div class="h">Repaso de hoy</div><div class="s">La repetición espaciada te trae justo las palabras que estás a punto de olvidar.</div>'+
+      '<div class="duewrap"><div class="due">'+due.length+'</div><button class="srsbtn" onclick="startSRS()">Repasar ahora →</button></div>'+
+      '<div class="srsinfo" onclick="alert(\'Cada vez que aciertas una palabra, tarda más en volver (1, 2, 4, 8, 16 días). Si fallas, vuelve pronto. Así memorizas con el mínimo esfuerzo. Es el método de las cajas de Leitner.\')">¿Qué es esto?</div>';
+  }else{
+    b.innerHTML='<div class="h">✓ Repaso al día</div><div class="s">No tienes palabras pendientes de repasar ahora mismo. Vuelve mañana o practica temas nuevos.</div>';
+  }
+}
+function startSRS(){
+  const due=dueWords();if(due.length===0)return;
+  srsMode=true;shuffle(due);
+  deck=due.slice(0,20).map(w=>{let d=Math.random()<.5?'es2ar':'ar2es';let m=['flash','quiz','write'][Math.random()*3|0];return{w,d,m}});
+  idx=0;score={ok:0,mid:0,no:0};
+  document.querySelectorAll('#tabs .tab').forEach(x=>x.classList.remove('on'));
+  document.getElementById('explore').style.display='none';
+  document.getElementById('study').style.display='block';render();
+}
+
+/* ---------- EXPLORE (accordion) ---------- */
+let expFilter='all', expQuery='';
+let openTopics=new Set();
+document.getElementById('search').addEventListener('input',e=>{expQuery=e.target.value.toLowerCase().trim();renderExplore()});
+document.querySelectorAll('.filterbar .chip').forEach(c=>c.onclick=()=>{
+  document.querySelectorAll('.filterbar .chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');expFilter=c.dataset.f;renderExplore()});
+function expandAll(v){openTopics=v?new Set(TOPICS):new Set();renderExplore()}
+function matchFilter(w){const tg=TAGMAP[w.tag]||'com';const st=getStatus(w);
+  if(expFilter==='all')return true;if(expFilter==='new')return w.new;
+  if(expFilter==='lb'||expFilter==='kw'||expFilter==='com')return tg===expFilter;
+  if(expFilter==='no')return st==='no'||st===null;if(expFilter==='mid')return st==='mid';return true}
+function matchQuery(w){if(!expQuery)return true;return (w.es&&w.es.toLowerCase().includes(expQuery))||(w.tr&&w.tr.toLowerCase().includes(expQuery))||(w.ar&&w.ar.includes(expQuery))}
+function renderExplore(){
+  renderSRS();
+  const cont=document.getElementById('exploreList');cont.innerHTML='';
+  const forceOpen=!!expQuery; let total=0;
+  TOPICS.forEach(t=>{
+    const items=VOCAB[t].filter(w=>matchFilter(w)&&matchQuery(w));
+    if(items.length===0)return;total+=items.length;
+    const known=VOCAB[t].filter(w=>getStatus(w)==='ok').length;
+    const isOpen=forceOpen||openTopics.has(t);
+    const acc=document.createElement('div');acc.className='acc'+(isOpen?' open':'');
+    // mini progreso: 5 puntos según % dominado
+    const ratio=VOCAB[t].length?known/VOCAB[t].length:0;
+    let dots='';for(let i=0;i<5;i++)dots+='<span class="mpdot'+(i<Math.round(ratio*5)?' ok':'')+'"></span>';
+    const head=document.createElement('div');head.className='acchead';
+    head.innerHTML='<span class="chev">▶</span><span class="accname">'+t.replace(/ \(.*\)/,'')+'</span>'+
+      '<span class="miniprog">'+dots+'</span><span class="acccnt">'+known+'/'+VOCAB[t].length+'</span>';
+    head.onclick=()=>{if(openTopics.has(t))openTopics.delete(t);else openTopics.add(t);renderExplore()};
+    acc.appendChild(head);
+    const body=document.createElement('div');body.className='accbody';
+    items.forEach(w=>{
+      const tg=TAGMAP[w.tag]||'com';const st=getStatus(w)||'';const known=st==='ok';
+      const row=document.createElement('div');row.className='row';
+      row.innerHTML='<span class="res '+st+'"></span>'+
+        '<div class="rmain"><div class="res-es">'+w.es+(w.new?'<span class="newdot">NUEVO</span>':'')+'</div><div class="res-tr">'+w.tr+'</div></div>'+
+        '<span class="tagmini t-'+tg+'">'+(TAGSHORT[tg]||'')+'</span>'+
+        '<div class="rar">'+(w.ar||'')+'</div>'+
+        '<button class="iconbtn play" title="Escuchar">🔊</button>'+
+        '<button class="iconbtn know'+(known?' on':'')+'" title="Marcar como que ya la sé">✓</button>';
+      const btns=row.querySelectorAll('.iconbtn');
+      btns[0].onclick=()=>speak(w.ar||w.tr);
+      btns[1].onclick=()=>{ if(getStatus(w)==='ok'){const p=loadProg();delete p[wordKey(w)];saveProg(p);renderExplore()} else markKnown(w)};
+      body.appendChild(row);
+    });
+    acc.appendChild(body);cont.appendChild(acc);
+  });
+  if(total===0)cont.innerHTML='<div class="empty">No hay palabras con ese filtro o búsqueda.</div>';
+}
+
+/* ---------- TOPIC CHIPS ---------- */
+const tc=document.getElementById('topicChips');
+TOPICS.forEach(t=>{const b=document.createElement('button');b.className='chip on';b.textContent=t.replace(/ \(.*\)/,'');b.dataset.topic=t;
+  b.onclick=()=>{b.classList.toggle('on');b.classList.contains('on')?sel.add(t):sel.delete(t);updateMeta()};tc.appendChild(b)});
+function selAll(v){sel=v?new Set(TOPICS):new Set();document.querySelectorAll('#topicChips .chip').forEach(c=>c.classList.toggle('on',v));updateMeta()}
+function selPending(){sel=new Set();document.querySelectorAll('#topicChips .chip').forEach(c=>{const t=c.dataset.topic;const has=VOCAB[t].some(w=>getStatus(w)!=='ok');c.classList.toggle('on',has);if(has)sel.add(t)});updateMeta()}
+function countSel(){let n=0;sel.forEach(t=>n+=VOCAB[t].length);return n}
+function updateMeta(){const n=countSel();document.getElementById('deckMeta').textContent=n+' palabra'+(n!=1?'s':'')+' en '+sel.size+' tema'+(sel.size!=1?'s':'');document.getElementById('startBtn').disabled=n===0}
+document.querySelectorAll('#modeBox .mode').forEach(m=>m.onclick=()=>{document.querySelectorAll('#modeBox .mode').forEach(x=>x.classList.remove('on'));m.classList.add('on');mode=m.dataset.mode});
+document.querySelectorAll('#dirBox .chip').forEach(m=>m.onclick=()=>{document.querySelectorAll('#dirBox .chip').forEach(x=>x.classList.remove('on'));m.classList.add('on');dir=m.dataset.dir});
+document.querySelectorAll('#lenBox .chip').forEach(m=>m.onclick=()=>{document.querySelectorAll('#lenBox .chip').forEach(x=>x.classList.remove('on'));m.classList.add('on');len=+m.dataset.len});
+document.getElementById('voiceToggle').onchange=e=>voiceOn=e.target.checked;
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function globalStat(){let ok=0,mid=0,no=0,total=0;TOPICS.forEach(t=>VOCAB[t].forEach(w=>{total++;const s=getStatus(w);if(s==='ok')ok++;else if(s==='mid')mid++;else if(s==='no')no++}));
+  const seen=ok+mid+no;const el=document.getElementById('globalStat');
+  if(seen===0){el.textContent='Aún no has practicado. '+total+' palabras te esperan.';return}
+  el.innerHTML='Progreso global: <b style="color:var(--ok)">'+ok+' dominadas</b> · <b style="color:var(--mid)">'+mid+' a mejorar</b> · <b style="color:var(--no)">'+no+' por aprender</b> · '+(total-seen)+' sin ver'}
+
+/* ---------- ENGINE ---------- */
+function start(){srsMode=false;let pool=[];sel.forEach(t=>VOCAB[t].forEach(w=>pool.push({...w,topic:t})));shuffle(pool);if(len>0)pool=pool.slice(0,len);
+  deck=pool.map(w=>{let d=dir;if(d==='both')d=Math.random()<.5?'es2ar':'ar2es';let m=mode;if(m==='mix')m=['flash','quiz','write'][Math.random()*3|0];return{w,d,m}});
+  idx=0;score={ok:0,mid:0,no:0};document.getElementById('setup').style.display='none';document.getElementById('study').style.display='block';render()}
+function quit(){document.getElementById('study').style.display='none';speechSynthesis&&speechSynthesis.cancel();
+  if(srsMode){document.querySelectorAll('#tabs .tab')[0].classList.add('on');document.getElementById('explore').style.display='block';renderExplore()}
+  else{document.getElementById('setup').style.display='block';globalStat();updateMeta()}}
+function promptText(w,d){return d==='es2ar'?w.es:(w.ar||w.tr)}
+function answerText(w,d){return d==='es2ar'?w.tr:w.es}
+function isArPrompt(d){return d==='ar2es'} function isArAnswer(d){return d==='es2ar'}
+function autoSpeak(w,d){if(voiceOn&&isArPrompt(d))speak(w.ar||w.tr)}
+function render(){if(idx>=deck.length)return done();const {w,d,m}=deck[idx];
+  document.getElementById('counter').textContent=(idx+1)+'/'+deck.length;document.getElementById('pfill').style.width=(idx/deck.length*100)+'%';
+  const stage=document.getElementById('stage');
+  if(m==='flash'){stage.innerHTML=flashHTML(w,d);setTimeout(()=>{bindFlash();autoSpeak(w,d)},10)}
+  else if(m==='quiz'){renderQuiz(w,d);autoSpeak(w,d)}else{renderWrite(w,d);autoSpeak(w,d)}}
+function tagPill(w){const tg=TAGMAP[w.tag]||'com';return '<span class="tagpill t-'+tg+'">'+(TAGSHORT[tg]||'')+'</span>'}
+function flashHTML(w,d){const q=promptText(w,d),qAr=isArPrompt(d);const a=answerText(w,d),aAr=isArAnswer(d);
+  const extra=d==='es2ar'?('<div class="qsub">'+(w.ar||'')+'</div>'):('<div class="qsub">'+w.tr+'</div>');
+  const arS=(w.ar||w.tr).replace(/'/g,"\\'");
+  return '<div class="flash" id="flash"><div class="flinner"><div class="face fr">'+tagPill(w)+(w.new?'<span class="newpill">NUEVO</span>':'')+
+    '<div class="qbig '+(qAr?'ar':'')+'">'+q+'</div><div class="hint">toca para ver la respuesta</div>'+(qAr?'<button class="speak" onclick="event.stopPropagation();speak(\''+arS+'\')">🔊</button>':'')+'</div>'+
+    '<div class="face bk">'+tagPill(w)+'<div class="qbig '+(aAr?'ar':'')+'">'+a+'</div>'+extra+'<button class="speak" onclick="event.stopPropagation();speak(\''+arS+'\')">🔊</button></div></div></div>'+
+    '<div class="selfrate"><button class="rate r-no" onclick="rate(\'no\')">❌ No la sé</button><button class="rate r-mid" onclick="rate(\'mid\')">🔶 A medias</button><button class="rate r-ok" onclick="rate(\'ok\')">✅ La sé</button></div>'+
+    '<div class="ratehint">Voltea la tarjeta y sé honesto contigo mismo</div>'}
+let flipped=false;
+function bindFlash(){flipped=false;const f=document.getElementById('flash');if(f)f.onclick=()=>{flipped=!flipped;f.classList.toggle('flip');if(flipped&&voiceOn&&isArAnswer(deck[idx].d)){const w=deck[idx].w;speak(w.ar||w.tr)}}}
+function rate(s){updateRec(deck[idx].w,s);score[s]++;next()}
+function renderQuiz(w,d){const correct=answerText(w,d),aAr=isArAnswer(d),qAr=isArPrompt(d);
+  let others=[];Object.values(VOCAB).flat().forEach(x=>{if(answerText(x,d)!==correct)others.push(x)});shuffle(others);
+  const distract=[];const used=new Set([correct]);for(const o of others){const t=answerText(o,d);if(!used.has(t)){used.add(t);distract.push(o)}if(distract.length>=3)break}
+  const opts=shuffle([w,...distract]);const stage=document.getElementById('stage');const arS=(w.ar||w.tr).replace(/'/g,"\\'");
+  stage.innerHTML='<div class="qcard">'+tagPill(w)+(w.new?'<span class="newpill">NUEVO</span>':'')+'<div class="qsub">¿Qué significa?</div><div class="qbig '+(qAr?'ar':'')+'" style="font-size:30px;margin-top:6px">'+promptText(w,d)+'</div>'+(qAr?'<button class="speak" style="position:static;margin:14px auto 0" onclick="speak(\''+arS+'\')">🔊</button>':'')+'</div><div class="opts" id="opts"></div>';
+  const ob=document.getElementById('opts');
+  opts.forEach(o=>{const b=document.createElement('button');b.className='opt '+(aAr?'ar':'');b.textContent=answerText(o,d);
+    b.onclick=()=>{const right=answerText(o,d)===correct;document.querySelectorAll('#opts .opt').forEach(x=>{x.disabled=true;if(x.textContent===correct)x.classList.add('correct');else if(x===b)x.classList.add('wrong')});
+      if(right&&voiceOn&&aAr)speak(w.ar||w.tr);const st=right?'ok':'no';updateRec(w,st);score[st]++;setTimeout(next,right?750:1500)};ob.appendChild(b)})}
+function norm(s){return (s||'').toLowerCase().trim().replace(/[ـّ]/g,'').replace(/\s+/g,' ').replace(/[¿?¡!.,;:()\/]/g,'').replace(/[áàä]/g,'a').replace(/[éèë]/g,'e').replace(/[íìï]/g,'i').replace(/[óòö]/g,'o').replace(/[úùü]/g,'u')}
+function renderWrite(w,d){const qAr=isArPrompt(d);const stage=document.getElementById('stage');const q=promptText(w,d);
+  const hint=d==='es2ar'?'Escribe en transcripción (ej: bait, baddi)':'Escribe en español';const arS=(w.ar||w.tr).replace(/'/g,"\\'");
+  stage.innerHTML='<div class="qcard">'+tagPill(w)+(w.new?'<span class="newpill">NUEVO</span>':'')+'<div class="qsub">Traduce</div><div class="qbig '+(qAr?'ar':'')+'" style="font-size:28px;margin-top:6px">'+q+'</div>'+(qAr?'<button class="speak" style="position:static;margin:14px auto 0" onclick="speak(\''+arS+'\')">🔊</button>':'')+'</div><input class="winput" id="winput" placeholder="'+hint+'" autocomplete="off" autocapitalize="off"><button class="wbtn" id="wcheck">Comprobar</button><div class="wfeedback" id="wfb"></div>';
+  const inp=document.getElementById('winput');inp.focus();
+  const check=()=>{const val=inp.value;if(!val.trim())return;const target=d==='es2ar'?w.tr:w.es;const targets=target.split('/').map(norm);const nv=norm(val);
+    const good=targets.some(t=>nv===t||(t.length>4&&(nv.includes(t)||t.includes(nv))));
+    inp.disabled=true;document.getElementById('wcheck').style.display='none';const fb=document.getElementById('wfb');
+    if(good){fb.className='wfeedback show good';fb.innerHTML='✅ ¡Correcto!<div class="ans">'+w.tr+(w.ar?' · '+w.ar:'')+' = '+w.es+'</div>';if(voiceOn)speak(w.ar||w.tr);updateRec(w,'ok');score.ok++;setTimeout(next,1200)}
+    else{fb.className='wfeedback show bad';fb.innerHTML='La respuesta era:<div class="ans">'+(d==='es2ar'?(w.tr+(w.ar?' · '+w.ar:'')):w.es)+'</div><div style="margin-top:6px;font-size:13px">Tu respuesta: <i>'+val+'</i></div><div class="wself"><button class="rate r-no" onclick="rate(\'no\')">No la sabía</button><button class="rate r-mid" onclick="rate(\'mid\')">Casi / a mejorar</button></div>'}};
+  document.getElementById('wcheck').onclick=check;inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!inp.disabled)check()})}
+function next(){idx++;render()}
+function done(){document.getElementById('pfill').style.width='100%';const total=deck.length;const pct=Math.round(score.ok/total*100);
+  let msg=pct>=80?'¡Mashallah! Vas muy bien':pct>=50?'Buen trabajo, sigue así':'A seguir practicando, yalla';
+  const stage=document.getElementById('stage');
+  const extra= srsMode? '<button class="back" style="display:block;margin:14px auto 0" onclick="quit()">← Volver a Explorar</button>'
+    : '<button class="start" onclick="start()" style="margin-bottom:10px">Otra ronda igual</button><button class="wbtn" onclick="repeatWrong()" '+(score.no+score.mid===0?'disabled style=\"opacity:.4\"':'')+'>Repasar solo las falladas</button><button class="back" style="display:block;margin:14px auto 0" onclick="quit()">← Volver</button>';
+  stage.innerHTML='<div class="done"><div class="big">'+msg+'</div><div style="color:#8A8577;font-size:14px">'+(srsMode?'Repaso espaciado · ':'Ronda de ')+total+' palabras</div><div class="scoreline"><div class="scol"><div class="n ok">'+score.ok+'</div><div class="l">✅ Bien</div></div><div class="scol"><div class="n mid">'+score.mid+'</div><div class="l">🔶 A medias</div></div><div class="scol"><div class="n no">'+score.no+'</div><div class="l">❌ Falladas</div></div></div>'+extra+'</div>'}
+function repeatWrong(){let pool=[];sel.forEach(t=>VOCAB[t].forEach(w=>{const s=getStatus(w);if(s==='no'||s==='mid')pool.push({...w,topic:t})}));if(pool.length===0)return;shuffle(pool);
+  deck=pool.map(w=>{let d=dir;if(d==='both')d=Math.random()<.5?'es2ar':'ar2es';let m=mode;if(m==='mix')m=['flash','quiz','write'][Math.random()*3|0];return{w,d,m}});idx=0;score={ok:0,mid:0,no:0};render()}
+
+document.addEventListener('keydown',e=>{if(document.getElementById('study').style.display==='none')return;const m=deck[idx]&&deck[idx].m;
+  if(e.key==='s'||e.key==='S'){const w=deck[idx].w;speak(w.ar||w.tr)}
+  if(e.code==='Space'&&m==='flash'){e.preventDefault();const f=document.getElementById('flash');if(f){flipped=!flipped;f.classList.toggle('flip')}}
+  if(m==='flash'&&flipped){if(e.key==='1')rate('no');if(e.key==='2')rate('mid');if(e.key==='3')rate('ok')}});
+
+renderExplore();updateMeta();globalStat();
+</script>
+</body>
+</html>
