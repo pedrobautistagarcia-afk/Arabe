@@ -277,7 +277,7 @@
     <div class="card">
       <div class="label">🎧 Dictado — escucha y escribe</div>
       <p style="font-size:13px;color:#6B6557;line-height:1.6;margin-bottom:6px">La app dice una palabra en árabe y tú escribes la transcripción (ej: <i>bait</i>, <i>baddi</i>). Entrena tu oído, que es lo que necesitas para entender a la gente.</p>
-      <div id="dictVoiceWarn" style="font-size:12px;color:var(--no);margin-top:8px"></div><button class="wbtn" style="margin-top:12px;background:var(--teal)" onclick="speak('مرحبا')">🔊 Probar sonido</button><div style="font-size:11px;color:#A89F8C;margin-top:6px">Si no suena: tu ordenador no tiene voz árabe. En Windows: Configuración › Hora e idioma › Idioma › añadir Árabe. En Mac: Ajustes › Accesibilidad › Contenido hablado › Voz del sistema › Gestionar voces › Árabe. Sin eso, el navegador no puede leer árabe.</div>
+      <div id="dictVoiceWarn" style="font-size:12px;color:var(--no);margin-top:8px"></div><button class="wbtn" style="margin-top:12px;background:var(--teal)" onclick="speak('مرحبا')">🔊 Probar sonido</button><button class="wbtn" style="margin-top:8px;background:#6B6557" onclick="runDiag()">🔧 Diagnóstico de audio</button><pre id="diagOut" style="display:none;font-size:11px;background:#2b2b2b;color:#9fe;padding:12px;border-radius:10px;margin-top:10px;white-space:pre-wrap;line-height:1.5"></pre><div style="font-size:11px;color:#A89F8C;margin-top:6px">Si no suena: tu ordenador no tiene voz árabe. En Windows: Configuración › Hora e idioma › Idioma › añadir Árabe. En Mac: Ajustes › Accesibilidad › Contenido hablado › Voz del sistema › Gestionar voces › Árabe. Sin eso, el navegador no puede leer árabe.</div>
     </div>
     <div class="card">
       <div class="selrow"><div class="label" style="margin:0">Temas</div>
@@ -354,7 +354,7 @@ function loadVoices(){
   const note=document.getElementById('vnote');
   if(note)note.textContent=arVoice?('Voz detectada: '+arVoice.name+'.'):(voicesLoaded?'No hay voz árabe instalada; sonará con la voz por defecto. iOS: Ajustes › Accesibilidad › Contenido leído › Voces › Árabe. Android: Ajustes › Idiomas › Texto a voz.':'Cargando voces…');
   const dw=document.getElementById('dictVoiceWarn');
-  if(dw)dw.textContent=(voicesLoaded && !arVoice)?'⚠️ No detecto voz árabe; el dictado sonará con la voz por defecto, que puede no pronunciar bien. Instálala en los ajustes de voz del sistema.':'';
+  if(dw)dw.textContent=(voicesLoaded && !arVoice)?'ℹ️ Sin voz árabe instalada: el audio suena con la voz por defecto (acento no árabe). Para acento real, instala una voz árabe en tu sistema.':'';
 }
 function pickVoice(){loadVoices()}
 if('speechSynthesis' in window){
@@ -371,21 +371,56 @@ function unlockAudio(){
 document.addEventListener('pointerdown',unlockAudio,{once:false});
 document.addEventListener('keydown',unlockAudio,{once:false});
 
+let fallbackVoice=null;
 function speak(text){
   if(!('speechSynthesis' in window)||!text)return;
   if(!voicesLoaded)loadVoices();
   try{speechSynthesis.cancel();}catch(e){}
   try{speechSynthesis.resume();}catch(e){}
   const u=new SpeechSynthesisUtterance(text);
-  if(arVoice){u.voice=arVoice;u.lang=arVoice.lang;}
-  else{u.lang='ar';}   // sin voz árabe: dejamos que el navegador elija; 'ar' a secas es más compatible
+  if(arVoice){
+    u.voice=arVoice;u.lang=arVoice.lang;
+  }else{
+    // No hay voz árabe: usar una voz que SÍ exista (la por defecto del sistema),
+    // sin forzar lang='ar' (eso dejaba el motor mudo en algunos navegadores).
+    if(!fallbackVoice){
+      const vs=speechSynthesis.getVoices();
+      fallbackVoice = vs.find(v=>v.default) || vs.find(v=>/^es/i.test(v.lang)) || vs[0] || null;
+    }
+    if(fallbackVoice)u.voice=fallbackVoice;
+    // no fijamos u.lang: dejamos el de la voz elegida -> así SIEMPRE suena algo
+  }
   u.rate=.8;u.pitch=1;u.volume=1;
   setTimeout(()=>{try{speechSynthesis.speak(u);
-    // Chrome desktop a veces se "duerme": forzar resume tras arrancar
     setTimeout(()=>{try{speechSynthesis.resume();}catch(e){}},120);
   }catch(e){}},60);
 }
 
+
+function runDiag(){
+  const out=document.getElementById('diagOut');out.style.display='block';
+  let log='';
+  if(!('speechSynthesis' in window)){out.textContent='❌ Tu navegador NO soporta speechSynthesis.';return;}
+  log+='✓ speechSynthesis disponible\n';
+  const vs=speechSynthesis.getVoices();
+  log+='Voces totales: '+vs.length+'\n';
+  if(vs.length===0){log+='⚠️ 0 voces cargadas. El navegador aún no las ha dado.\n';}
+  const ar=vs.filter(v=>/ar/i.test(v.lang)||/arab/i.test(v.name));
+  log+='Voces árabes: '+ar.length+(ar.length?(' → '+ar.map(v=>v.name+' ('+v.lang+')').join(', ')):'')+'\n';
+  const es=vs.filter(v=>/^es/i.test(v.lang));
+  log+='Voces español: '+es.length+'\n';
+  log+='\nProbando voz en español (test general)…\n';
+  out.textContent=log;
+  // test 1: español genérico, para ver si el motor habla ALGO
+  try{
+    const u=new SpeechSynthesisUtterance('hola, prueba de sonido');
+    if(es.length)u.voice=es[0];
+    u.onstart=()=>{out.textContent=log+'✓ ¡El motor SÍ habla! (oíste "hola")\n\nSi esto sonó pero el árabe no, es que falta la voz árabe.';};
+    u.onerror=(e)=>{out.textContent=log+'❌ Error al hablar: '+e.error+'\nEl audio del navegador está bloqueado o silenciado.';};
+    speechSynthesis.cancel();speechSynthesis.resume();
+    setTimeout(()=>speechSynthesis.speak(u),100);
+  }catch(e){out.textContent=log+'❌ Excepción: '+e.message;}
+}
 /* ---------- PROGRESS + SRS ---------- */
 const PKEY='yalla_progress_v2';
 const INTERVALS=[0,1,2,4,8,16];
