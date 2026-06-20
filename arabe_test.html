@@ -277,7 +277,7 @@
     <div class="card">
       <div class="label">🎧 Dictado — escucha y escribe</div>
       <p style="font-size:13px;color:#6B6557;line-height:1.6;margin-bottom:6px">La app dice una palabra en árabe y tú escribes la transcripción (ej: <i>bait</i>, <i>baddi</i>). Entrena tu oído, que es lo que necesitas para entender a la gente.</p>
-      <div id="dictVoiceWarn" style="font-size:12px;color:var(--no);margin-top:8px"></div><button class="wbtn" style="margin-top:12px;background:var(--teal)" onclick="speak('مرحبا')">🔊 Probar sonido</button><button class="wbtn" style="margin-top:8px;background:#6B6557" onclick="runDiag()">🔧 Diagnóstico de audio</button><pre id="diagOut" style="display:none;font-size:11px;background:#2b2b2b;color:#9fe;padding:12px;border-radius:10px;margin-top:10px;white-space:pre-wrap;line-height:1.5"></pre><div style="font-size:11px;color:#A89F8C;margin-top:6px">Si no suena: tu ordenador no tiene voz árabe. En Windows: Configuración › Hora e idioma › Idioma › añadir Árabe. En Mac: Ajustes › Accesibilidad › Contenido hablado › Voz del sistema › Gestionar voces › Árabe. Sin eso, el navegador no puede leer árabe.</div>
+      <div id="dictVoiceWarn" style="font-size:12px;color:var(--no);margin-top:8px"></div><div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap"><button class="wbtn" style="flex:1;background:var(--teal)" onclick="testSound(1)">🔊 Árabe</button><button class="wbtn" style="flex:1;background:var(--teal)" onclick="testSound(2)">🔊 Transcripción</button><button class="wbtn" style="flex:1;background:var(--teal)" onclick="testSound(3)">🔊 Español</button></div><button class="wbtn" style="margin-top:8px;background:#6B6557" onclick="runDiag()">🔧 Diagnóstico de audio</button><pre id="diagOut" style="display:none;font-size:11px;background:#2b2b2b;color:#9fe;padding:12px;border-radius:10px;margin-top:10px;white-space:pre-wrap;line-height:1.5"></pre><div style="font-size:11px;color:#A89F8C;margin-top:6px">Si no suena: tu ordenador no tiene voz árabe. En Windows: Configuración › Hora e idioma › Idioma › añadir Árabe. En Mac: Ajustes › Accesibilidad › Contenido hablado › Voz del sistema › Gestionar voces › Árabe. Sin eso, el navegador no puede leer árabe.</div>
     </div>
     <div class="card">
       <div class="selrow"><div class="label" style="margin:0">Temas</div>
@@ -354,7 +354,7 @@ function loadVoices(){
   const note=document.getElementById('vnote');
   if(note)note.textContent=arVoice?('Voz detectada: '+arVoice.name+'.'):(voicesLoaded?'No hay voz árabe instalada; sonará con la voz por defecto. iOS: Ajustes › Accesibilidad › Contenido leído › Voces › Árabe. Android: Ajustes › Idiomas › Texto a voz.':'Cargando voces…');
   const dw=document.getElementById('dictVoiceWarn');
-  if(dw)dw.textContent=(voicesLoaded && !arVoice)?'ℹ️ Sin voz árabe instalada: el audio suena con la voz por defecto (acento no árabe). Para acento real, instala una voz árabe en tu sistema.':'';
+  if(dw)dw.textContent=(voicesLoaded && !arVoice)?'ℹ️ Sin voz árabe instalada: el audio lee la transcripción (marhaba, baddi…) con tu voz por defecto. Para oír la grafía árabe con acento real, instala una voz árabe en el sistema.':'';
 }
 function pickVoice(){loadVoices()}
 if('speechSynthesis' in window){
@@ -420,6 +420,24 @@ function runDiag(){
     speechSynthesis.cancel();speechSynthesis.resume();
     setTimeout(()=>speechSynthesis.speak(u),100);
   }catch(e){out.textContent=log+'❌ Excepción: '+e.message;}
+}
+
+function testSound(n){
+  if(!('speechSynthesis' in window)){alert('Tu navegador no soporta audio de voz.');return;}
+  try{speechSynthesis.cancel();}catch(e){}
+  try{speechSynthesis.resume();}catch(e){}
+  const vs=speechSynthesis.getVoices();
+  const def = vs.find(v=>v.default)||vs.find(v=>/^es/i.test(v.lang))||vs[0]||null;
+  let txt;
+  if(n===1)txt='مرحبا';
+  else if(n===2)txt='marhaba'; // transliteración latina
+  else txt='hola qué tal';     // español puro
+  const u=new SpeechSynthesisUtterance(txt);
+  if(def)u.voice=def;
+  u.rate=.85;u.volume=1;
+  u.onstart=()=>console.log('TTS start',n,txt);
+  u.onerror=e=>alert('Error al reproducir ('+n+'): '+e.error);
+  setTimeout(()=>{speechSynthesis.speak(u);setTimeout(()=>{try{speechSynthesis.resume()}catch(e){}},120);},80);
 }
 /* ---------- PROGRESS + SRS ---------- */
 const PKEY='yalla_progress_v2';
@@ -550,7 +568,14 @@ function quit(){speechSynthesis&&speechSynthesis.cancel();goHome()}
 function promptText(w,d){return d==='es2ar'?w.es:(w.ar||w.tr)}
 function answerText(w,d){return d==='es2ar'?w.tr:w.es}
 function isArPrompt(d){return d==='ar2es'} function isArAnswer(d){return d==='es2ar'}
-function sayAr(w){return w.speak||w.ar||w.tr}
+function cleanTr(s){
+  // limpiar transcripción para que la voz la lea mejor: quitar "(LB)/(KW)", barras, etc.
+  if(!s)return '';
+  s=s.replace(/\(LB\)|\(KW\)/g,'').split('/')[0];
+  s=s.replace(/3/g,'aa').replace(/kh/gi,'j').replace(/gh/gi,'g').replace(/'/g,'');
+  return s.trim();
+}
+function sayAr(w){ return w.speak||w.ar||w.tr; }
 function autoSpeak(w,d){if(voiceOn&&isArPrompt(d))speak(sayAr(w))}
 
 function render(){
