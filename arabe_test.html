@@ -277,7 +277,7 @@
     <div class="card">
       <div class="label">🎧 Dictado — escucha y escribe</div>
       <p style="font-size:13px;color:#6B6557;line-height:1.6;margin-bottom:6px">La app dice una palabra en árabe y tú escribes la transcripción (ej: <i>bait</i>, <i>baddi</i>). Entrena tu oído, que es lo que necesitas para entender a la gente.</p>
-      <div id="dictVoiceWarn" style="font-size:12px;color:var(--no);margin-top:8px"></div>
+      <div id="dictVoiceWarn" style="font-size:12px;color:var(--no);margin-top:8px"></div><button class="wbtn" style="margin-top:12px;background:var(--teal)" onclick="speak('مرحبا')">🔊 Probar sonido</button><div style="font-size:11px;color:#A89F8C;margin-top:6px">Si no suena: tu ordenador no tiene voz árabe. En Windows: Configuración › Hora e idioma › Idioma › añadir Árabe. En Mac: Ajustes › Accesibilidad › Contenido hablado › Voz del sistema › Gestionar voces › Árabe. Sin eso, el navegador no puede leer árabe.</div>
     </div>
     <div class="card">
       <div class="selrow"><div class="label" style="margin:0">Temas</div>
@@ -375,11 +375,15 @@ function speak(text){
   if(!('speechSynthesis' in window)||!text)return;
   if(!voicesLoaded)loadVoices();
   try{speechSynthesis.cancel();}catch(e){}
+  try{speechSynthesis.resume();}catch(e){}
   const u=new SpeechSynthesisUtterance(text);
-  if(arVoice){u.voice=arVoice;u.lang=arVoice.lang;}else{u.lang='ar-SA';}
-  u.rate=.8;u.pitch=1;
-  // pequeño respiro tras cancel() para evitar que algunos navegadores lo ignoren
-  setTimeout(()=>{try{speechSynthesis.speak(u);}catch(e){}},60);
+  if(arVoice){u.voice=arVoice;u.lang=arVoice.lang;}
+  else{u.lang='ar';}   // sin voz árabe: dejamos que el navegador elija; 'ar' a secas es más compatible
+  u.rate=.8;u.pitch=1;u.volume=1;
+  setTimeout(()=>{try{speechSynthesis.speak(u);
+    // Chrome desktop a veces se "duerme": forzar resume tras arrancar
+    setTimeout(()=>{try{speechSynthesis.resume();}catch(e){}},120);
+  }catch(e){}},60);
 }
 
 /* ---------- PROGRESS + SRS ---------- */
