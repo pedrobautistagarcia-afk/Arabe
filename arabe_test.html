@@ -299,15 +299,15 @@
     <button class="backHome" onclick="goHome()">← Inicio</button>
     <div class="card">
       <div class="label">🔀 Conjugar verbos</div>
-      <p style="font-size:13px;color:#6B6557;line-height:1.6">Te muestro un verbo y un pronombre (yo, tú, él…) y eliges la forma correcta. Empieza con los verbos de tus apuntes. Los marcados <span class="revisarPill">REVISAR</span> los añadí yo: confírmalos con tu profe.</p>
+      <p style="font-size:13px;color:#6B6557;line-height:1.6"><b>Ver conjugación</b>: pulsa un verbo y mira su presente completo, con audio. Abajo verás cómo formar gerundio y futuro.<br><br><b>Practicar (test)</b>: te pregunta formas para acertar. Los marcados <span class="revisarPill">REV</span> los añadí yo: confírmalos con tu profe.</p>
     </div>
     <div class="card">
       <div class="label">¿Qué verbos?</div>
       <div class="chips" id="conjVerbChips"></div>
       <div class="label" style="margin-top:18px">Modo</div>
       <div class="dirs" id="conjModeBox">
-        <button class="chip small on" data-cmode="quiz" style="text-align:center">Opciones</button>
-        <button class="chip small" data-cmode="table" style="text-align:center">Ver tabla</button>
+        <button class="chip small on" data-cmode="table" style="text-align:center">📖 Ver conjugación</button>
+        <button class="chip small" data-cmode="quiz" style="text-align:center">🎯 Practicar (test)</button>
       </div>
     </div>
     <button class="start" id="conjStartBtn" onclick="startConjug()">Empezar</button>
@@ -338,7 +338,7 @@ const TAGSHORT = {'lb':'🇱🇧 LB','kw':'🇰🇼 KW','com':'⚪','mix':'🔀 
 const DAY=86400000;
 
 let sel=new Set(TOPICS), dictSel=new Set(TOPICS), conjSel=new Set();
-let mode='mix', dir='both', len=10, voiceOn=true, dictLen=10, conjMode='quiz';
+let mode='mix', dir='both', len=10, voiceOn=true, dictLen=10, conjMode='table';
 let deck=[], idx=0, score={ok:0,mid:0,no:0}, sessionType='practice';
 
 /* ---------- VOICE ---------- */
@@ -591,14 +591,48 @@ function renderConj(item){const {v,pr}=item;const correct=v.forms[pr][0];const s
     b.onclick=()=>{const right=o===correct;document.querySelectorAll('#opts .opt').forEach(x=>{x.disabled=true;if(x.textContent===correct)x.classList.add('correct');else if(x===b)x.classList.add('wrong')});
       if(right&&voiceOn)speak(v.forms[pr][1]);score[right?'ok':'no']++;setTimeout(next,right?800:1600)};ob.appendChild(b)})}
 function showConjTable(){
+  // Modo explorar: lista de verbos; al pulsar uno se ve su conjugación
   hideAll();document.getElementById('study').style.display='block';
   document.getElementById('counter').textContent='';document.getElementById('pfill').style.width='100%';
-  const stage=document.getElementById('stage');let html='';
-  conjSel.forEach(vi=>{const v=CONJUG.verbs[vi];
-    html+='<div class="card" style="margin-top:10px"><div class="conjverb" style="margin-bottom:12px"><div class="inf">'+v.inf+(v.src==='revisar'?'<span class="revisarPill">REVISAR</span>':'')+'</div><div class="ar" style="font-size:26px">'+v.ar+'</div></div>';
-    PRONS.forEach(pr=>{const f=v.forms[pr];html+='<div class="row" style="border:none;padding:7px 0"><div class="rmain"><div class="res-es">'+CONJUG.pronouns[pr]+'</div><div class="res-tr">'+f[0]+'</div></div><div class="rar">'+f[1]+'</div><button class="iconbtn play" onclick="speak(\''+f[1].replace(/'/g,"\\'")+'\')">🔊</button></div>'})
-    html+='</div>'});
-  stage.innerHTML=html+'<button class="start" onclick="goHome()" style="margin-top:16px">← Volver al inicio</button>';
+  const stage=document.getElementById('stage');
+  let html='<div style="margin-bottom:10px;font-size:13px;color:#8A8577">Pulsa un verbo para ver su conjugación en presente.</div>';
+  CONJUG.verbs.forEach((v,i)=>{
+    html+='<button class="mcard wide" style="margin-bottom:8px;display:flex;align-items:center;gap:12px" onclick="showOneVerb('+i+')">'+
+      '<span style="font-family:\'Noto Naskh Arabic\',serif;font-size:26px;color:var(--teal);direction:rtl;min-width:50px;text-align:right">'+v.ar+'</span>'+
+      '<span style="flex:1;text-align:left"><span class="mt">'+v.inf+'</span><span class="md">'+v.forms.ana[0]+' · '+v.forms.enta[0]+' · '+v.forms.huwa[0]+'…</span></span>'+
+      (v.src==='revisar'?'<span class="revisarPill">REV</span>':'')+
+      '<span style="color:#A89F8C">›</span></button>';
+  });
+  html+='<div class="card" style="margin-top:16px"><div class="label">📝 Gerundio y futuro</div><div style="font-size:13px;color:#444;line-height:1.7">'+
+    '<b>Gerundio (estoy haciendo…)</b><br>'+
+    '🇰🇼 Kuwaití: <b>gaed</b> + verbo en presente. <i>Ana gaed adres</i> = estoy estudiando.<br>'+
+    '🇱🇧 Libanés: <b>3am</b> + verbo en presente. <i>Ana 3am edros</i> = estoy estudiando.<br><br>'+
+    '<b>Futuro (voy a / haré…)</b><br>'+
+    '🇱🇧 Libanés: <b>rah</b> + verbo. <i>Rah ruh</i> = voy a ir.<br>'+
+    '🇰🇼 Kuwaití: <b>bi-</b> pegado al verbo, o <b>rah</b>. <i>Baruh</i> / <i>rah aruh</i> = voy a ir.<br>'+
+    'También vale <b>baddi/abi + verbo</b> para intención. <i>Baddi tla3</i> = voy a salir.<br>'+
+    '<span style="font-size:11px;color:#A89F8C">⚠️ Estas reglas son la base general; confírmalas con tu profe, sobre todo los matices libanés/kuwaití.</span>'+
+    '</div></div>';
+  stage.innerHTML='<button class="back" onclick="goHome()" style="margin-bottom:10px">← Inicio</button>'+html;
+}
+function showOneVerb(i){
+  const v=CONJUG.verbs[i];
+  hideAll();document.getElementById('study').style.display='block';
+  document.getElementById('counter').textContent='';document.getElementById('pfill').style.width='100%';
+  const stage=document.getElementById('stage');
+  let html='<button class="back" onclick="showConjTable()" style="margin-bottom:10px">← Verbos</button>';
+  html+='<div class="card"><div class="conjverb" style="margin-bottom:14px"><div class="inf" style="font-size:28px">'+v.inf+(v.src==='revisar'?'<span class="revisarPill">REVISAR</span>':'')+'</div><div class="ar" style="font-size:32px">'+v.ar+'</div><div style="font-size:12px;color:#A89F8C;margin-top:4px;text-transform:uppercase;letter-spacing:1px">Presente</div></div>';
+  PRONS.forEach(pr=>{const f=v.forms[pr];
+    html+='<div class="row" style="padding:9px 0"><div class="rmain"><div class="res-es">'+CONJUG.pronouns[pr]+'</div><div class="res-tr" style="font-size:15px;color:var(--ink);font-weight:600">'+f[0]+'</div></div><div class="rar" style="font-size:24px">'+f[1]+'</div><button class="iconbtn play" onclick="speak(\''+f[1].replace(/'/g,"\\'")+'\')">🔊</button></div>';
+  });
+  html+='</div>';
+  // recordatorio de gerundio/futuro para ESTE verbo
+  const ana=v.forms.ana[0];
+  html+='<div class="card" style="margin-top:12px"><div class="label">Gerundio y futuro de "'+v.inf.toLowerCase()+'"</div><div style="font-size:13px;color:#444;line-height:1.8">'+
+    'Gerundio 🇰🇼 <b>gaed '+ana+'</b> · 🇱🇧 <b>3am '+(ana.replace(/^A/,'e'))+'</b><br>'+
+    'Futuro 🇱🇧 <b>rah '+ana.replace(/^A/,'').toLowerCase()+'</b> · intención <b>baddi/abi '+ana.replace(/^A/,'').toLowerCase()+'</b><br>'+
+    '<span style="font-size:11px;color:#A89F8C">⚠️ Forma orientativa generada con la regla general — confírmala con tu profe.</span></div></div>';
+  stage.innerHTML=html;
 }
 
 function next(){idx++;render()}
