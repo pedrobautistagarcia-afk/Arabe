@@ -347,6 +347,23 @@
   .vt-note{font-size:11px;color:#9DB0B8;font-style:italic;margin:6px 2px 0;text-align:center}
   .vt-past td{background:#FBF7EF}
   #verbs .vtable+.vtable{margin-top:0}
+  .vpractice-btn{display:block;width:100%;background:linear-gradient(135deg,#0E9594,#0B7A79);color:#fff;border:none;border-radius:15px;padding:15px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;margin-bottom:18px;box-shadow:0 4px 16px rgba(14,149,148,.25);transition:.15s}
+  .vpractice-btn:hover{transform:translateY(-2px);box-shadow:0 7px 22px rgba(14,149,148,.32)}
+  /* verb practice card */
+  .vp-card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:24px 20px;text-align:center;box-shadow:0 2px 12px rgba(20,40,50,.05)}
+  .vp-type{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#0E9594;margin-bottom:14px}
+  .vp-prompt{font-size:15px;color:var(--ink-soft);margin-bottom:8px}
+  .vp-big{font-family:'Noto Naskh Arabic',serif;font-size:38px;direction:rtl;color:var(--ink);margin:6px 0}
+  .vp-bigtr{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:var(--clay);margin:6px 0;letter-spacing:-.5px}
+  .vp-sub{font-size:14px;color:var(--ink-soft)}
+  .vp-pron{display:inline-block;background:#E0F2F1;color:#0B7A79;font-weight:800;padding:6px 16px;border-radius:99px;font-size:18px;margin:10px 0}
+  .vp-opts{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+  .vp-opt{background:var(--paper);border:1.5px solid var(--line);border-radius:13px;padding:14px;font-size:16px;cursor:pointer;font-family:inherit;color:var(--ink);transition:.12s;font-weight:600}
+  .vp-opt:hover{border-color:var(--clay)}
+  .vp-opt.ar{font-family:'Noto Naskh Arabic',serif;font-size:22px;direction:rtl}
+  .vp-opt.correct{background:#E0F5EE;border-color:var(--ok);color:#0B7A5F}
+  .vp-opt.wrong{background:#FBE9E7;border-color:var(--no);color:#C0392B}
+  .vp-prog{font-size:12px;color:#9DB0B8;font-weight:700;margin-bottom:14px}
   /* BUILD SENTENCES */
   .buildwrap{max-width:560px;margin:0 auto}
   .build-es{text-align:center;font-size:18px;font-weight:700;color:var(--ink);margin:8px 0 4px}
@@ -606,6 +623,7 @@ const DAY=86400000;
 let sel=new Set(TOPICS), dictSel=new Set(TOPICS), conjSel=new Set();
 let curLevel=null;
 let vExpanded=-1, verbFilterEss=false, curFraseIdx=0, curVerbGi=0;
+let vpDeck=[], vpIdx=0, vpScore=0;
 let mode='mix', dir='both', len=10, voiceOn=true, dictLen=10, conjMode='table';
 let deck=[], idx=0, score={ok:0,mid:0,no:0}, sessionType='practice';
 
@@ -1299,6 +1317,7 @@ function goVerbs(){hideAll();document.getElementById('verbs').style.display='blo
 function renderVerbs(){
   const stage=document.getElementById('verbsStage');
   let h='<div class="vsec-intro"><h2>🔤 Verbos</h2><p>Los verbos del día a día en kuwaití. Toca uno para ver tiempos y frases.</p></div>';
+  h+='<button class="vpractice-btn" onclick="startVerbPractice()">🎯 Practicar verbos</button>';
   h+='<div class="viewtoggle" style="margin-bottom:14px"><button class="vtbtn on" id="vfAll" onclick="setVerbFilter(false)">Todos</button><button class="vtbtn" id="vfEss" onclick="setVerbFilter(true)">⭐ Los 25 esenciales</button></div>';
   Object.keys(VERBS2.categorias).forEach(cat=>{
     let verbs=VERBS2.categorias[cat];
@@ -1434,6 +1453,104 @@ function buildPhrasePool(){
   }));
 }
 buildPhrasePool();
+
+
+/* ---------- PRÁCTICA DE VERBOS ---------- */
+function allVerbsList(){let out=[];Object.values(VERBS2.categorias).forEach(vs=>vs.forEach(v=>out.push(v)));return out;}
+function startVerbPractice(){
+  const verbs=allVerbsList();
+  // construir mazo de ejercicios variados
+  let exercises=[];
+  verbs.forEach(v=>{
+    // tipo 1: reconocer significado (presente él -> español)
+    exercises.push({type:'recognize',v});
+    // tipo 2: conjugación (si tiene conj verificada)
+    if(v.conj){
+      const prons=['ana','enta','enti','huwa','ehna','hum'];
+      const pr=prons[Math.floor(Math.random()*prons.length)];
+      exercises.push({type:'conjugate',v,pron:pr});
+    }
+    // tipo 3: completar frase (si tiene frases)
+    if(v.frases&&v.frases.length>0){
+      exercises.push({type:'phrase',v,frase:v.frases[Math.floor(Math.random()*v.frases.length)]});
+    }
+  });
+  shuffle(exercises);
+  vpDeck=exercises.slice(0,15);vpIdx=0;vpScore=0;
+  hideAll();document.getElementById('verbs').style.display='block';
+  renderVerbPractice();
+}
+function renderVerbPractice(){
+  const stage=document.getElementById('verbsStage');
+  if(vpIdx>=vpDeck.length){
+    const pct=Math.round(vpScore/vpDeck.length*100);
+    stage.innerHTML='<div class="done"><div style="font-size:46px">'+(pct>=70?'🎉':'💪')+'</div><div class="dscore">'+vpScore+' / '+vpDeck.length+'</div><div style="color:var(--ink-soft);margin:8px 0 18px">'+(pct>=70?'¡Muy bien!':'Sigue practicando')+'</div><button class="start" onclick="startVerbPractice()">Otra ronda</button><button class="back" style="display:block;margin:14px auto 0" onclick="renderVerbs()">← Verbos</button></div>';
+    return;
+  }
+  const ex=vpDeck[vpIdx];
+  let h='<button class="back" onclick="renderVerbs()" style="margin-bottom:10px">← Salir</button>';
+  h+='<div class="vp-prog">'+(vpIdx+1)+' / '+vpDeck.length+'</div>';
+  h+='<div class="vp-card">';
+  if(ex.type==='recognize')h+=vpRecognize(ex);
+  else if(ex.type==='conjugate')h+=vpConjugate(ex);
+  else h+=vpPhrase(ex);
+  h+='</div>';
+  stage.innerHTML=h;
+  // leer en voz
+  if(ex.type==='recognize')speak(ex.v.pres);
+  else if(ex.type==='conjugate'&&ex.v.conj[ex.pron])speak(ex.v.conj[ex.pron][1]);
+}
+function vpRecognize(ex){
+  const v=ex.v;
+  // 4 opciones de significado
+  const all=allVerbsList();shuffle(all);
+  let opts=[v];for(const o of all){if(o!==v&&opts.length<4)opts.push(o);}
+  shuffle(opts);
+  let h='<div class="vp-type">¿Qué verbo es?</div>';
+  h+='<div class="vp-big">'+v.pres+'</div><div class="vp-bigtr" style="font-size:18px">'+v.prtr+'</div>';
+  h+='<div class="vp-opts">';
+  opts.forEach(o=>{h+='<button class="vp-opt" onclick="vpAnswer(this,'+(o===v?'true':'false')+')">'+o.es+'</button>';});
+  h+='</div>';
+  return h;
+}
+function vpConjugate(ex){
+  const v=ex.v,pr=ex.pron;
+  const correct=v.conj[pr];
+  const PRON_ES={ana:'Yo',enta:'Tú (m)',enti:'Tú (f)',huwa:'Él',hiya:'Ella',ehna:'Nosotros',entu:'Vosotros',hum:'Ellos'};
+  // opciones: otras formas del mismo verbo
+  let opts=[correct];Object.keys(v.conj).forEach(k=>{if(k!==pr&&opts.length<4)opts.push(v.conj[k]);});
+  shuffle(opts);
+  let h='<div class="vp-type">Conjuga el verbo</div>';
+  h+='<div class="vp-sub">'+v.es+'</div><div class="vp-pron">'+PRON_ES[pr]+'</div>';
+  h+='<div class="vp-opts">';
+  opts.forEach(o=>{h+='<button class="vp-opt ar" onclick="vpAnswer(this,'+(o===correct?'true':'false')+')">'+o[1]+'<div style="font-size:13px;direction:ltr;color:var(--clay);font-family:Space Grotesk">'+o[0]+'</div></button>';});
+  h+='</div>';
+  return h;
+}
+function vpPhrase(ex){
+  const f=ex.frase;
+  // mostrar frase árabe, elegir traducción correcta
+  const all=[];Object.values(VERBS2.categorias).forEach(vs=>vs.forEach(v=>(v.frases||[]).forEach(fr=>all.push(fr))));
+  shuffle(all);
+  let opts=[f];for(const o of all){if(o!==f&&o.es!==f.es&&opts.length<4)opts.push(o);}
+  shuffle(opts);
+  let h='<div class="vp-type">¿Qué significa?</div>';
+  h+='<div class="vp-big" style="font-size:28px">'+f.ar+'</div><div class="vp-sub" style="color:var(--clay);font-weight:600">'+f.tr+'</div>';
+  h+='<div class="vp-opts" style="margin-top:14px">';
+  opts.forEach(o=>{h+='<button class="vp-opt" style="font-size:14px" onclick="vpAnswer(this,'+(o===f?'true':'false')+')">'+o.es+'</button>';});
+  h+='</div>';
+  return h;
+}
+function vpAnswer(btn,correct){
+  const opts=btn.parentElement.querySelectorAll('.vp-opt');
+  opts.forEach(o=>o.style.pointerEvents='none');
+  if(correct){btn.classList.add('correct');vpScore++;}
+  else{btn.classList.add('wrong');
+    // marcar la correcta
+    opts.forEach(o=>{if(o.getAttribute('onclick').includes('true'))o.classList.add('correct');});
+  }
+  setTimeout(()=>{vpIdx++;renderVerbPractice();},correct?800:1600);
+}
 
 goHome();
 </script>
