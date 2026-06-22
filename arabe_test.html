@@ -239,6 +239,17 @@
   .addword-btn{display:block;width:100%;background:var(--paper);border:1.5px dashed var(--clay);color:var(--clay);border-radius:14px;padding:13px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:14px}
   .addword-btn:hover{background:#FFF8F0}
 
+  /* CALENDARIO MODAL */
+  .streakBadge{cursor:pointer;transition:.15s}
+  .streakBadge:hover{transform:scale(1.05);box-shadow:0 2px 10px rgba(0,0,0,.1)}
+  .cal-modal{max-width:380px}
+  .cal-modal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .cal-modal-streak{font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;color:var(--clay);line-height:1}
+  .cal-modal-lbl{font-size:12px;color:var(--ink-soft);font-weight:600;margin-top:2px}
+  .cal-close{background:var(--line-soft);border:none;border-radius:10px;width:36px;height:36px;font-size:16px;cursor:pointer;color:var(--ink-soft);font-family:inherit}
+  .cal-close:hover{background:var(--line)}
+  .cal-modal .calpanel{margin-top:0;border:none;box-shadow:none;padding:0}
+  .cal-modal-note{text-align:center;font-size:12px;color:#9DB0B8;margin-top:16px}
   /* CALENDARIO */
   .calpanel{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:14px;box-shadow:0 1px 3px rgba(0,0,0,.03)}
   .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
@@ -455,7 +466,7 @@
   <header>
     <div class="logo">pedrolingo<span class="dot">.</span></div>
     <div class="tag" style="font-family:'Noto Naskh Arabic',serif;font-size:15px;direction:rtl">بيدرولينغو · عربي</div>
-    <div class="streakBadge" id="streakBadge" title="Tu racha de días seguidos"><span class="fire">🔥</span><span id="streakNum">0</span></div>
+    <button class="streakBadge" id="streakBadge" title="Ver tu calendario de práctica" onclick="openCalendar()"><span class="fire">🔥</span><span id="streakNum">0</span></button>
   </header>
 
   <!-- HOME -->
@@ -619,6 +630,9 @@
     <button class="backHome" onclick="goHome()">← Inicio</button>
     <div id="buildStage"></div>
   </div>
+
+  <!-- CALENDARIO MODAL -->
+  <div id="calModal"></div>
 
   <!-- EDITOR MODAL -->
   <div id="editorModal"></div>
@@ -859,6 +873,19 @@ function calendarHTML(){
   h+='</div></div>';
   return h;
 }
+
+function openCalendar(){
+  const s=loadStreak();
+  const m=document.getElementById('calModal');
+  m.innerHTML='<div class="modal-bg" onclick="if(event.target===this)closeCalendar()"><div class="modal cal-modal">'+
+    '<div class="cal-modal-top"><div><div class="cal-modal-streak">🔥 '+(s.count||0)+'</div><div class="cal-modal-lbl">día'+((s.count||0)!=1?'s':'')+' seguidos</div></div>'+
+    '<button class="cal-close" onclick="closeCalendar()">✕</button></div>'+
+    calendarHTML()+
+    '<div class="cal-modal-note">Cada día que practicas se marca con 🔥</div>'+
+    '</div></div>';
+}
+function closeCalendar(){document.getElementById('calModal').innerHTML='';}
+
 function calNav(dir){
   const now=new Date();
   let base = calMonth ? new Date(calMonth.y,calMonth.m,1) : new Date(now.getFullYear(),now.getMonth(),1);
@@ -867,14 +894,15 @@ function calNav(dir){
   const cur=new Date(now.getFullYear(),now.getMonth(),1);
   if(base>cur)return;
   calMonth={y:base.getFullYear(),m:base.getMonth()};
-  renderProgDetail();
+  // si el modal del calendario está abierto, re-renderizar ahí
+  if(document.getElementById('calModal').innerHTML){openCalendar();}
+  else{renderProgDetail();}
 }
 
 function renderProgDetail(){
   const cont=document.getElementById('progDetail');if(!cont)return;
   let ok=0,mid=0,no=0,total=0;TOPICS.forEach(t=>VOCAB[t].forEach(w=>{total++;const s=getStatus(w);if(s==='ok')ok++;else if(s==='mid')mid++;else if(s==='no')no++}));
-  let html=calendarHTML();
-  html+='<div class="statbar" style="margin-top:14px">'+
+  let html='<div class="statbar" style="margin-top:14px">'+
     '<div class="sb"><div class="n ok">'+ok+'</div><div class="l">Dominadas</div></div>'+
     '<div class="sb"><div class="n mid">'+mid+'</div><div class="l">A mejorar</div></div>'+
     '<div class="sb"><div class="n no">'+no+'</div><div class="l">Por aprender</div></div>'+
@@ -1344,6 +1372,7 @@ function goBuild(){
 function renderBuild(){
   const stage=document.getElementById('buildStage');
   if(buildIdx>=buildDeck.length){
+    touchStreak();
     stage.innerHTML='<div class="done"><div style="font-size:44px">🎉</div><div class="dscore">'+buildScore+' / '+buildDeck.length+'</div><div style="color:var(--ink-soft);margin:8px 0 18px">frases construidas</div><button class="start" onclick="goBuild()">Otra ronda</button><button class="back" style="display:block;margin:14px auto 0" onclick="goHome()">← Inicio</button></div>';
     return;
   }
@@ -1603,6 +1632,7 @@ function startVerbPractice(){
 function renderVerbPractice(){
   const stage=document.getElementById('verbsStage');
   if(vpIdx>=vpDeck.length){
+    touchStreak();
     const pct=Math.round(vpScore/vpDeck.length*100);
     stage.innerHTML='<div class="done"><div style="font-size:46px">'+(pct>=70?'🎉':'💪')+'</div><div class="dscore">'+vpScore+' / '+vpDeck.length+'</div><div style="color:var(--ink-soft);margin:8px 0 18px">'+(pct>=70?'¡Muy bien!':'Sigue practicando')+'</div><button class="start" onclick="startVerbPractice()">Otra ronda</button><button class="back" style="display:block;margin:14px auto 0" onclick="renderVerbs()">← Verbos</button></div>';
     return;
