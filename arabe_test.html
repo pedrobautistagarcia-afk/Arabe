@@ -239,6 +239,20 @@
   .addword-btn{display:block;width:100%;background:var(--paper);border:1.5px dashed var(--clay);color:var(--clay);border-radius:14px;padding:13px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:14px}
   .addword-btn:hover{background:#FFF8F0}
 
+  /* CALENDARIO */
+  .calpanel{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:14px;box-shadow:0 1px 3px rgba(0,0,0,.03)}
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+  .cal-title{font-family:'Fraunces',serif;font-size:17px;font-weight:600}
+  .cal-nav{background:var(--line-soft);border:none;border-radius:9px;width:32px;height:32px;font-size:18px;cursor:pointer;color:var(--ink);font-family:inherit;line-height:1}
+  .cal-nav:hover{background:var(--line)}
+  .cal-streak{font-size:12px;font-weight:700;color:var(--clay);margin-bottom:14px}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+  .cal-dow{text-align:center;font-size:10px;font-weight:800;color:#9DB0B8;padding-bottom:4px}
+  .cal-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--ink-soft);border-radius:9px;font-family:'Space Grotesk',sans-serif}
+  .cal-cell.empty{visibility:hidden}
+  .cal-cell.done{background:linear-gradient(135deg,#FFF0E0,#FFE4CC);font-size:16px}
+  .cal-cell.today{border:2px solid var(--clay);color:var(--clay);font-weight:800}
+  .cal-cell.today.done{border:2px solid var(--clay)}
   /* HOME MINIMAL */
   .greet{margin:18px 2px 0}
   .greet .g-hi{font-family:'Fraunces',serif;font-size:26px;font-weight:600;line-height:1.15;letter-spacing:-.3px}
@@ -771,8 +785,13 @@ function loadStreak(){try{return JSON.parse(localStorage.getItem(SKEY))||{count:
 function saveStreak(s){try{localStorage.setItem(SKEY,JSON.stringify(s))}catch(e){}}
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
 function dayDiff(a,b){const pa=a.split('-').map(Number),pb=b.split('-').map(Number);const da=new Date(pa[0],pa[1]-1,pa[2]),db=new Date(pb[0],pb[1]-1,pb[2]);return Math.round((db-da)/DAY)}
+const DKEY='pedrolingo_days_v1';
+function loadDays(){try{return JSON.parse(localStorage.getItem(DKEY))||[]}catch(e){return []}}
+function saveDays(d){try{localStorage.setItem(DKEY,JSON.stringify(d))}catch(e){}}
+function markPracticeDay(){const days=loadDays();const t=todayStr();if(!days.includes(t)){days.push(t);saveDays(days);}}
 function touchStreak(){ // llamar al completar cualquier sesión
   const s=loadStreak();const t=todayStr();
+  markPracticeDay(); // registrar el día en el calendario
   if(s.last===t)return s.count; // ya contado hoy
   if(s.last && dayDiff(s.last,t)===1)s.count++;
   else s.count=1;
@@ -809,10 +828,53 @@ function renderHome(){
   // progreso (relleno pero oculto hasta que se despliega)
   renderProgDetail();
 }
+
+let calMonth=null; // null = mes actual
+function calendarHTML(){
+  const days=loadDays(); // array de "Y-M-D"
+  const daySet=new Set(days);
+  const now=new Date();
+  const view = calMonth ? new Date(calMonth.y,calMonth.m,1) : new Date(now.getFullYear(),now.getMonth(),1);
+  const y=view.getFullYear(), m=view.getMonth();
+  const monthNames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const firstDay=(new Date(y,m,1).getDay()+6)%7; // lunes=0
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const tStr=todayStr();
+  // contar días practicados este mes
+  let monthCount=0;daySet.forEach(d=>{const p=d.split('-').map(Number);if(p[0]===y&&p[1]-1===m)monthCount++;});
+  let h='<div class="calpanel"><div class="cal-head">';
+  h+='<button class="cal-nav" onclick="calNav(-1)">‹</button>';
+  h+='<div class="cal-title">'+monthNames[m]+' '+y+'</div>';
+  h+='<button class="cal-nav" onclick="calNav(1)">›</button></div>';
+  h+='<div class="cal-streak">🔥 '+monthCount+' día'+(monthCount!=1?'s':'')+' este mes</div>';
+  h+='<div class="cal-grid">';
+  ['L','M','X','J','V','S','D'].forEach(d=>h+='<div class="cal-dow">'+d+'</div>');
+  for(let i=0;i<firstDay;i++)h+='<div class="cal-cell empty"></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=y+'-'+(m+1)+'-'+d;
+    const done=daySet.has(ds);
+    const isToday=ds===tStr;
+    h+='<div class="cal-cell'+(done?' done':'')+(isToday?' today':'')+'">'+(done?'🔥':d)+'</div>';
+  }
+  h+='</div></div>';
+  return h;
+}
+function calNav(dir){
+  const now=new Date();
+  let base = calMonth ? new Date(calMonth.y,calMonth.m,1) : new Date(now.getFullYear(),now.getMonth(),1);
+  base.setMonth(base.getMonth()+dir);
+  // no permitir ir al futuro más allá del mes actual
+  const cur=new Date(now.getFullYear(),now.getMonth(),1);
+  if(base>cur)return;
+  calMonth={y:base.getFullYear(),m:base.getMonth()};
+  renderProgDetail();
+}
+
 function renderProgDetail(){
   const cont=document.getElementById('progDetail');if(!cont)return;
   let ok=0,mid=0,no=0,total=0;TOPICS.forEach(t=>VOCAB[t].forEach(w=>{total++;const s=getStatus(w);if(s==='ok')ok++;else if(s==='mid')mid++;else if(s==='no')no++}));
-  let html='<div class="statbar" style="margin-top:14px">'+
+  let html=calendarHTML();
+  html+='<div class="statbar" style="margin-top:14px">'+
     '<div class="sb"><div class="n ok">'+ok+'</div><div class="l">Dominadas</div></div>'+
     '<div class="sb"><div class="n mid">'+mid+'</div><div class="l">A mejorar</div></div>'+
     '<div class="sb"><div class="n no">'+no+'</div><div class="l">Por aprender</div></div>'+
