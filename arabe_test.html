@@ -403,6 +403,8 @@
   .vsec-intro p{font-size:13px;color:var(--ink-soft);margin-top:4px}
   .vcat{margin-bottom:10px}
   .vcat-head{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--paper);border:1px solid var(--line);border-radius:14px;cursor:pointer;transition:.15s;font-weight:700;font-size:15px}
+  .catTestBtn{background:#FFF6E8;color:#7A5A1F;border:1px solid #E8C988;border-radius:9px;padding:5px 9px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0}
+  .catTestBtn:hover{background:#FFE9C2}
   .vcat-head:hover{border-color:var(--clay)}
   .vcat-head .vchev{margin-left:auto;color:#9DB0B8;transition:.2s}
   .vcat.open .vchev{transform:rotate(90deg)}
@@ -809,7 +811,7 @@ const DAY=86400000;
 let sel=new Set(TOPICS), dictSel=new Set(TOPICS), conjSel=new Set();
 let curLevel=null;
 let vExpanded=-1, verbFilterEss=false, curFraseIdx=0, curVerbGi=0;
-let vpDeck=[], vpIdx=0, vpScore=0;
+let vpDeck=[], vpIdx=0, vpScore=0, vpCategory=null;
 let vfDeck=[], vfIdx=0, vfFlipped=false, vfEss=false;
 let mgPairs=[], mgLeft=[], mgRight=[], mgSelLeft=null, mgMatched=new Set(), mgAttempts=0;
 let nhDeck=[], nhIdx=0, nhScore=0, nhMode='menu';
@@ -1880,7 +1882,7 @@ function renderVerbs(){
     if(verbFilterEss)verbs=verbs.filter(v=>v.esencial);
     if(verbs.length===0)return;
     const open=vOpenCat.has(cat);
-    h+='<div class="vcat'+(open?' open':'')+'"><div class="vcat-head" onclick="toggleVcat(\''+cat.replace(/'/g,"")+'\')"><span>'+cat+'</span><span class="vcat-count">'+verbs.length+'</span><span class="vchev">▶</span></div><div class="vcat-body">';
+    h+='<div class="vcat'+(open?' open':'')+'"><div class="vcat-head" onclick="toggleVcat(\''+cat.replace(/'/g,"")+'\')"><span>'+cat+'</span><span class="vcat-count">'+verbs.length+'</span><button class="catTestBtn" onclick="event.stopPropagation();startVerbPractice(\''+cat.replace(/'/g,"")+'\')">🎯 Test</button><span class="vchev">▶</span></div><div class="vcat-body">';
     verbs.forEach(v=>{
       const gi=globalVerbIndex(v);const exp=vExpanded===gi;
       h+='<div class="vrow'+(exp?' expanded':'')+'" id="vrow'+gi+'">';
@@ -2045,8 +2047,9 @@ applyEdits();
 
 /* ---------- PRÁCTICA DE VERBOS ---------- */
 function allVerbsList(){let out=[];Object.values(VERBS2.categorias).forEach(vs=>vs.forEach(v=>out.push(v)));return out;}
-function startVerbPractice(){
-  const verbs=allVerbsList();
+function startVerbPractice(catFilter){
+  vpCategory=catFilter||null;
+  const verbs=catFilter?(VERBS2.categorias[catFilter]||[]).slice():allVerbsList();
   // construir mazo de ejercicios variados
   let exercises=[];
   verbs.forEach(v=>{
@@ -2082,7 +2085,7 @@ function renderVerbPractice(){
   if(vpIdx>=vpDeck.length){
     touchStreak();
     const pct=Math.round(vpScore/vpDeck.length*100);
-    stage.innerHTML='<div class="done"><div style="font-size:46px">'+(pct>=70?'🎉':'💪')+'</div><div class="dscore">'+vpScore+' / '+vpDeck.length+'</div><div style="color:var(--ink-soft);margin:8px 0 18px">'+(pct>=70?'¡Muy bien!':'Sigue practicando')+'</div><button class="start" onclick="startVerbPractice()">Otra ronda</button><button class="back" style="display:block;margin:14px auto 0" onclick="renderVerbs()">← Verbos</button></div>';
+    stage.innerHTML='<div class="done"><div style="font-size:46px">'+(pct>=70?'🎉':'💪')+'</div><div class="dscore">'+vpScore+' / '+vpDeck.length+'</div>'+(vpCategory?'<div style="font-size:12px;color:#9DB0B8;margin-top:-6px">'+vpCategory+'</div>':'')+'<div style="color:var(--ink-soft);margin:8px 0 18px">'+(pct>=70?'¡Muy bien!':'Sigue practicando')+'</div><button class="start" onclick="startVerbPractice('+(vpCategory?"'"+vpCategory.replace(/'/g,"")+"'":'')+')">Otra ronda</button><button class="back" style="display:block;margin:14px auto 0" onclick="renderVerbs()">← Verbos</button></div>';
     return;
   }
   const ex=vpDeck[vpIdx];
