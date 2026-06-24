@@ -311,6 +311,13 @@
   .testbtn{margin-top:8px;width:100%;background:#C8902F;color:#fff;border:none;border-radius:12px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
   .testbtn:hover{filter:brightness(.95)}
   .wrap.wide{max-width:1180px}
+  .weekBanner{background:#FFF6E8;border:1px solid #E8C988;border-radius:13px;padding:10px 14px;font-size:13px;color:#7A5A1F;text-align:center;margin-top:10px}
+  .badgeGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;margin-top:10px}
+  .badge{background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:12px 8px;text-align:center;font-size:11px;color:#5A6B73}
+  .badge.got{background:#FFF6E8;border-color:#E8C988;color:#7A5A1F}
+  .badge .bIcon{font-size:24px;display:block;margin-bottom:4px}
+  .badge.locked .bIcon{filter:grayscale(1) opacity(.4)}
+  .badge .bTitle{font-weight:700;display:block;margin-top:2px}
   .studyTableWrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;margin-top:10px}
   table.studyTable{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--paper)}
   table.studyTable thead th{position:sticky;top:0;background:var(--sand);font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#5A6B73;text-align:left;padding:5px 8px;border-bottom:2px solid var(--line)}
@@ -509,6 +516,8 @@
     <div class="greet" id="greet"></div>
     <!-- acción protagonista (continúa donde lo dejaste) -->
     <div id="primaryAction"></div>
+    <!-- resumen semanal -->
+    <div id="weekSummary"></div>
     <!-- acciones principales, limpias -->
     <div class="actionlist" style="margin-top:18px">
       <button class="rowcard" onclick="goLevels()"><span class="rc-ic" style="background:#E0F2F1;color:#0E9594">🗺️</span><span class="rc-txt"><span class="rc-t">Niveles</span><span class="rc-d">Tu ruta paso a paso</span></span><span class="rc-go">→</span></button>
@@ -519,6 +528,7 @@
       <button class="rowcard" onclick="goDialogs()"><span class="rc-ic" style="background:#EDE9F6;color:#8B6FC9">💬</span><span class="rc-txt"><span class="rc-t">Situaciones reales</span><span class="rc-d">Diálogos del día a día</span></span><span class="rc-go">→</span></button>
       <button class="rowcard" onclick="goDictado()"><span class="rc-ic" style="background:#FCE8EC;color:#D96B8E">🎧</span><span class="rc-txt"><span class="rc-t">Dictado</span><span class="rc-d">Escucha y escribe</span></span><span class="rc-go">→</span></button>
       <button class="rowcard" onclick="goExplore()"><span class="rc-ic" style="background:#EAF0F4;color:#5A8DB8">📖</span><span class="rc-txt"><span class="rc-t">Explorar</span><span class="rc-d">Todo el vocabulario</span></span><span class="rc-go">→</span></button>
+      <button class="rowcard" onclick="goLbKw()"><span class="rc-ic" style="background:#FDEDED;color:#C0392B">🔀</span><span class="rc-txt"><span class="rc-t">Líbano vs Kuwait</span><span class="rc-d">Compara los dos dialectos</span></span><span class="rc-go">→</span></button>
     </div>
     <!-- progreso plegable, discreto al final -->
     <button class="progtoggle" id="progToggle" onclick="toggleProg()">Ver mi progreso <span id="progChev">▾</span></button>
@@ -658,6 +668,12 @@
   <div id="levelStudy" style="display:none">
     <button class="backHome" onclick="goLevels()">← Niveles</button>
     <div id="levelStudyStage"></div>
+  </div>
+
+  <!-- LIBANO VS KUWAIT -->
+  <div id="lbkw" style="display:none">
+    <button class="backHome" onclick="goHome()">← Inicio</button>
+    <div id="lbkwStage"></div>
   </div>
 
 
@@ -901,13 +917,27 @@ function renderStreak(){const s=loadStreak();const b=document.getElementById('st
 }
 
 /* ---------- NAV ---------- */
-function hideAll(){const w=document.querySelector('.wrap');if(w)w.classList.remove('wide');['home','explore','setup','dictSetup','conjSetup','dialogs','levels','levelStudy','build','verbs','numhora','study'].forEach(id=>document.getElementById(id).style.display='none')}
+function hideAll(){const w=document.querySelector('.wrap');if(w)w.classList.remove('wide');['home','explore','setup','dictSetup','conjSetup','dialogs','levels','levelStudy','lbkw','build','verbs','numhora','study'].forEach(id=>document.getElementById(id).style.display='none')}
 function goHome(){curLevel=null;hideAll();document.getElementById('home').style.display='block';speechSynthesis&&speechSynthesis.cancel();renderHome()}
 function goExplore(){hideAll();document.getElementById('explore').style.display='block';renderExplore()}
 function goPractice(){hideAll();document.getElementById('setup').style.display='block';globalStat();updateMeta()}
 function goDictado(){hideAll();document.getElementById('dictSetup').style.display='block';pickVoice()}
 function goConjug(){hideAll();document.getElementById('conjSetup').style.display='block'}
 
+function daysThisWeek(){
+  const days=loadDays();const t=todayStr();
+  return days.filter(d=>{const diff=dayDiff(d,t);return diff>=0&&diff<7}).length;
+}
+function totalMastered(){
+  let n=0;TOPICS.forEach(t=>VOCAB[t].forEach(w=>{if(wordMastered(w))n++}));return n;
+}
+function renderWeekSummary(){
+  const el=document.getElementById('weekSummary');if(!el)return;
+  const days=daysThisWeek();
+  if(days===0){el.innerHTML='';return}
+  const mastered=totalMastered();
+  el.innerHTML='<div class="weekBanner">📅 Esta semana: <b>'+days+' día'+(days!=1?'s':'')+'</b> practicado'+(days!=1?'s':'')+' · <b>'+mastered+'</b> palabras dominadas en total</div>';
+}
 function renderHome(){
   renderStreak();
   const due=dueWords();const p=loadProg();const started=Object.keys(p).length>0;
@@ -924,6 +954,7 @@ function renderHome(){
   }
   // progreso (relleno pero oculto hasta que se despliega)
   renderProgDetail();
+  renderWeekSummary();
 }
 
 let calMonth=null; // null = mes actual
@@ -982,6 +1013,30 @@ function calNav(dir){
   else{renderProgDetail();}
 }
 
+function computeBadges(){
+  const streak=loadStreak().count||0;
+  const daysTotal=loadDays().length;
+  const mastered=totalMastered();
+  const testsPassed=Object.values(loadLevelTests()).filter(Boolean).length;
+  const started=Object.keys(loadProg()).length>0;
+  return [
+    {icon:'🌱',title:'Primer paso',got:started},
+    {icon:'🔥',title:'7 días seguidos',got:streak>=7},
+    {icon:'🔥🔥',title:'30 días seguidos',got:streak>=30},
+    {icon:'📅',title:'30 días en total',got:daysTotal>=30},
+    {icon:'📚',title:'100 dominadas',got:mastered>=100},
+    {icon:'📚📚',title:'300 dominadas',got:mastered>=300},
+    {icon:'🎯',title:'1 mini-test superado',got:testsPassed>=1},
+    {icon:'🗺️',title:'Todos los niveles',got:testsPassed>=4},
+  ];
+}
+function renderBadges(){
+  const badges=computeBadges();
+  let html='<div class="progpanel"><h3>Logros</h3><div class="badgeGrid">';
+  badges.forEach(b=>{html+='<div class="badge '+(b.got?'got':'locked')+'"><span class="bIcon">'+b.icon+'</span><span class="bTitle">'+b.title+'</span></div>'});
+  html+='</div></div>';
+  return html;
+}
 function renderProgDetail(){
   const cont=document.getElementById('progDetail');if(!cont)return;
   let ok=0,mid=0,no=0,total=0;TOPICS.forEach(t=>VOCAB[t].forEach(w=>{total++;const s=getStatus(w);if(s==='ok')ok++;else if(s==='mid')mid++;else if(s==='no')no++}));
@@ -998,6 +1053,7 @@ function renderProgDetail(){
     html+='<div class="catrow"><div class="caticon">'+mm.icon+'</div><div class="catinfo"><div class="catname"><span>'+mm.name+' <span style="color:#9DB0B8;font-weight:500">'+s.ok+'/'+s.total+'</span></span><span class="catpct" style="color:'+mm.color+'">'+pct+'%</span></div><div class="catbar-track"><div class="catbar-fill" style="width:'+pct+'%;background:'+mm.color+'"></div></div></div></div>';
   });
   html+='</div>';
+  html+=renderBadges();
   cont.innerHTML=html;
 }
 function toggleProg(){
@@ -1450,6 +1506,31 @@ function levelUnlocked(L){
   return levelTestPassed(L-1);
 }
 function goLevels(){hideAll();document.getElementById('levels').style.display='block';renderLevels()}
+function goLbKw(){
+  hideAll();
+  const w=document.querySelector('.wrap');if(w)w.classList.add('wide');
+  document.getElementById('lbkw').style.display='block';
+  renderLbKw();
+}
+function renderLbKw(){
+  const rows=[];
+  TOPICS.forEach(t=>VOCAB[t].forEach(ww=>{if(ww.lb&&ww.kw)rows.push({...ww,topic:t})}));
+  let h='<div style="text-align:center;margin-bottom:6px"><div style="font-family:\'Fraunces\',serif;font-size:24px;font-weight:600">🔀 Líbano vs Kuwait</div><div style="font-size:13px;color:#5A6B73;margin-top:4px">'+rows.length+' palabras con forma distinta en cada dialecto</div></div>';
+  h+='<div class="studyTableWrap"><table class="studyTable"><thead><tr><th>Español</th><th>🇱🇧 Libanés</th><th></th><th>🇰🇼 Kuwaití</th><th></th></tr></thead><tbody>';
+  let lastTopic=null;
+  rows.forEach(ww=>{
+    if(ww.topic!==lastTopic){h+='<tr class="topicRow"><td colspan="5">'+ww.topic+'</td></tr>';lastTopic=ww.topic}
+    const lbAr=ww.lb[1]||'',lbTr=ww.lb[0]||'',kwAr=ww.kw[1]||'',kwTr=ww.kw[0]||'';
+    const lbS=sayAr({ar:lbAr,tr:lbTr}).replace(/'/g,"\\'"),kwS=sayAr({ar:kwAr,tr:kwTr}).replace(/'/g,"\\'");
+    h+='<tr class="wordRow"><td class="colEs">'+ww.es+'</td>'+
+      '<td class="colAr">'+lbAr+'<div class="colTr" style="white-space:normal">'+lbTr+'</div></td>'+
+      '<td class="colSpeak">'+(lbAr?'<button class="miniSpeak" onclick="speak(\''+lbS+'\')">🔊</button>':'')+'</td>'+
+      '<td class="colAr">'+kwAr+'<div class="colTr" style="white-space:normal">'+kwTr+'</div></td>'+
+      '<td class="colSpeak">'+(kwAr?'<button class="miniSpeak" onclick="speak(\''+kwS+'\')">🔊</button>':'')+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  document.getElementById('lbkwStage').innerHTML=h;
+}
 function renderLevels(){
   migrateLevelTests();
   const c=document.getElementById('levelList');
