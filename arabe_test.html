@@ -317,6 +317,25 @@
   .vp-hint-ar{font-size:20px;direction:rtl;font-weight:600;color:#7A5A1F}
   .vp-hint-tr{font-size:13px;color:#8a611f;font-style:italic}
   @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+  .flashV{min-height:220px;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:24px 20px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 3px 14px rgba(0,0,0,.05)}
+  .flashV-front{display:flex;flex-direction:column;gap:10px;align-items:center}
+  .flashV-es{font-family:'Fraunces',serif;font-size:26px;font-weight:600}
+  .flashV-tap{font-size:12px;color:#9DB0B8}
+  .flashV-back{width:100%;text-align:left}
+  .flashV-row{display:flex;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid var(--line-soft,#EEF2F3)}
+  .flashV-lbl{font-size:11px;color:#9DB0B8;text-transform:uppercase;width:62px;flex-shrink:0}
+  .flashV-ar{font-size:18px;direction:rtl;font-weight:600}
+  .flashV-tr{font-size:12px;color:#8A9AA2;font-style:italic}
+  .flashV-frase{margin-top:10px;padding:10px 12px;background:var(--sand);border-radius:12px;font-size:13px;color:#3E5159}
+  .flashV-trick{margin-top:8px;padding:10px 12px;background:#FFF6E8;border:1px solid #E8C988;border-radius:12px;font-size:13px;color:#7A5A1F}
+  .flashV-nav{display:flex;gap:10px;margin-top:14px;align-items:center}
+  .matchGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .matchCol{display:flex;flex-direction:column;gap:8px}
+  .matchBtn{background:var(--paper);border:1.5px solid var(--line);border-radius:12px;padding:11px 10px;font-size:13px;text-align:center;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .matchBtn.selected{border-color:var(--clay);background:#E8F6F2}
+  .matchBtn.matched{border-color:var(--ok);background:#E8F6F2;color:var(--ok);opacity:.7}
+  .shake{animation:shakeAnim .35s}
+  @keyframes shakeAnim{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
   .badgeGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;margin-top:10px}
   .badge{background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:12px 8px;text-align:center;font-size:11px;color:#5A6B73}
   .badge.got{background:#FFF6E8;border-color:#E8C988;color:#7A5A1F}
@@ -688,6 +707,18 @@
     <div id="verbStudyStage"></div>
   </div>
 
+  <!-- VERB FLASHCARDS (modo tarjetas) -->
+  <div id="verbFlash" style="display:none">
+    <button class="backHome" onclick="goVerbs()">← Verbos</button>
+    <div id="verbFlashStage"></div>
+  </div>
+
+  <!-- VERB MATCH (emparejar) -->
+  <div id="verbMatch" style="display:none">
+    <button class="backHome" onclick="goVerbs()">← Verbos</button>
+    <div id="verbMatchStage"></div>
+  </div>
+
 
   <!-- NUMEROS Y HORA -->
   <div id="numhora" style="display:none">
@@ -769,6 +800,8 @@ let sel=new Set(TOPICS), dictSel=new Set(TOPICS), conjSel=new Set();
 let curLevel=null;
 let vExpanded=-1, verbFilterEss=false, curFraseIdx=0, curVerbGi=0;
 let vpDeck=[], vpIdx=0, vpScore=0;
+let vfDeck=[], vfIdx=0, vfFlipped=false, vfEss=false;
+let mgPairs=[], mgLeft=[], mgRight=[], mgSelLeft=null, mgMatched=new Set(), mgAttempts=0;
 let nhDeck=[], nhIdx=0, nhScore=0, nhMode='menu';
 let mode='mix', dir='both', len=10, voiceOn=true, dictLen=10, conjMode='table';
 let deck=[], idx=0, score={ok:0,mid:0,no:0}, sessionType='practice';
@@ -943,7 +976,7 @@ function renderStreak(){const s=loadStreak();const b=document.getElementById('st
 }
 
 /* ---------- NAV ---------- */
-function hideAll(){const w=document.querySelector('.wrap');if(w)w.classList.remove('wide');['home','explore','setup','dictSetup','conjSetup','dialogs','levels','levelStudy','lbkw','verbStudy','build','verbs','numhora','study'].forEach(id=>document.getElementById(id).style.display='none')}
+function hideAll(){const w=document.querySelector('.wrap');if(w)w.classList.remove('wide');['home','explore','setup','dictSetup','conjSetup','dialogs','levels','levelStudy','lbkw','verbStudy','verbFlash','verbMatch','build','verbs','numhora','study'].forEach(id=>document.getElementById(id).style.display='none')}
 function goHome(){curLevel=null;hideAll();document.getElementById('home').style.display='block';speechSynthesis&&speechSynthesis.cancel();renderHome()}
 function goExplore(){hideAll();document.getElementById('explore').style.display='block';renderExplore()}
 function goPractice(){hideAll();document.getElementById('setup').style.display='block';globalStat();updateMeta()}
@@ -1746,11 +1779,91 @@ function renderVerbStudyTable(){
   holder.innerHTML=h;
 }
 function goVerbs(){hideAll();document.getElementById('verbs').style.display='block';renderVerbs();}
+
+/* ---------- TARJETAS DE REPASO DE VERBOS ---------- */
+function openVerbFlash(ess){
+  vfEss=!!ess;
+  vfDeck=allVerbsList().filter(v=>!vfEss||v.esencial);
+  shuffle(vfDeck);vfIdx=0;vfFlipped=false;
+  hideAll();document.getElementById('verbFlash').style.display='block';
+  renderVerbFlash();
+}
+function renderVerbFlash(){
+  const stage=document.getElementById('verbFlashStage');
+  if(vfDeck.length===0){stage.innerHTML='<div class="done">No hay verbos para mostrar.</div>';return}
+  const v=vfDeck[vfIdx];
+  let h='<div class="vp-prog">'+(vfIdx+1)+' / '+vfDeck.length+'</div>';
+  h+='<div class="viewtoggle" style="margin-bottom:10px"><button class="vtbtn '+(vfEss?'':'on')+'" onclick="openVerbFlash(false)">Todos</button><button class="vtbtn '+(vfEss?'on':'')+'" onclick="openVerbFlash(true)">⭐ Esenciales</button></div>';
+  h+='<div class="flashV" onclick="flipVerbFlash()">';
+  if(!vfFlipped){
+    h+='<div class="flashV-front"><div class="flashV-es">'+v.es+(v.esencial?' ⭐':'')+'</div><div class="flashV-tap">Toca para ver</div></div>';
+  }else{
+    h+='<div class="flashV-back">';
+    h+='<div class="flashV-row"><span class="flashV-lbl">Pasado</span><span class="flashV-ar">'+v.past+'</span><span class="flashV-tr">'+v.ptr+'</span></div>';
+    h+='<div class="flashV-row"><span class="flashV-lbl">Presente</span><span class="flashV-ar">'+v.pres+'</span><span class="flashV-tr">'+v.prtr+'</span></div>';
+    if(v.yoar)h+='<div class="flashV-row"><span class="flashV-lbl">Yo</span><span class="flashV-ar">'+v.yoar+'</span><span class="flashV-tr">'+(v.yo||'')+'</span></div>';
+    if(v.frases&&v.frases.length){const f=v.frases[0];h+='<div class="flashV-frase">💬 <span style="direction:rtl">'+f.ar+'</span> · <i>'+f.tr+'</i><br>'+f.es+'</div>';}
+    if(VERB_TRICKS[v.yo])h+='<div class="flashV-trick">🧠 '+VERB_TRICKS[v.yo]+'</div>';
+    h+='</div>';
+  }
+  h+='</div>';
+  h+='<div class="flashV-nav"><button class="back" onclick="vfPrev()" '+(vfIdx===0?'disabled style="opacity:.4"':'')+'>← Anterior</button><button class="lvlbtn" style="flex:1" onclick="vfNext()">'+(vfIdx>=vfDeck.length-1?'Terminar':'Siguiente →')+'</button></div>';
+  stage.innerHTML=h;
+}
+function flipVerbFlash(){vfFlipped=!vfFlipped;renderVerbFlash()}
+function vfPrev(){if(vfIdx>0){vfIdx--;vfFlipped=false;renderVerbFlash()}}
+function vfNext(){
+  if(vfIdx<vfDeck.length-1){vfIdx++;vfFlipped=false;renderVerbFlash()}
+  else{touchStreak();document.getElementById('verbFlashStage').innerHTML='<div class="done"><div style="font-size:46px">🎉</div><div style="color:var(--ink-soft);margin:8px 0 18px">Has repasado '+vfDeck.length+' verbos</div><button class="start" onclick="openVerbFlash(vfEss)">Otra ronda</button><button class="back" style="display:block;margin:14px auto 0" onclick="goVerbs()">← Verbos</button></div>';}
+}
+
+/* ---------- EMPAREJAR VERBO Y FRASE ---------- */
+function startMatchGame(){
+  const pool=allVerbsList().filter(v=>v.frases&&v.frases.length>0);
+  shuffle(pool);
+  const chosen=pool.slice(0,4);
+  mgPairs=chosen.map((v,i)=>({id:i,es:v.es,frase:v.frases[0].es}));
+  mgLeft=mgPairs.map(p=>({id:p.id,txt:p.es}));shuffle(mgLeft);
+  mgRight=mgPairs.map(p=>({id:p.id,txt:p.frase}));shuffle(mgRight);
+  mgSelLeft=null;mgMatched=new Set();mgAttempts=0;
+  hideAll();document.getElementById('verbMatch').style.display='block';
+  renderMatchGame();
+}
+function renderMatchGame(){
+  const stage=document.getElementById('verbMatchStage');
+  let h='<div style="text-align:center;margin-bottom:10px"><div style="font-family:\'Fraunces\',serif;font-size:22px;font-weight:600">🔗 Empareja verbo y frase</div><div style="font-size:13px;color:#5A6B73;margin-top:4px">Toca un verbo y luego la frase que le corresponde</div></div>';
+  h+='<div class="matchGrid">';
+  h+='<div class="matchCol">';
+  mgLeft.forEach(it=>{const matched=mgMatched.has(it.id);h+='<button class="matchBtn'+(matched?' matched':'')+(mgSelLeft===it.id?' selected':'')+'" '+(matched?'disabled':'onclick="mgPick(\'L\','+it.id+')"')+'>'+it.txt+'</button>';});
+  h+='</div><div class="matchCol">';
+  mgRight.forEach(it=>{const matched=mgMatched.has(it.id);h+='<button class="matchBtn'+(matched?' matched':'')+'" '+(matched?'disabled':'onclick="mgPick(\'R\','+it.id+')"')+'>'+it.txt+'</button>';});
+  h+='</div></div>';
+  if(mgMatched.size===mgPairs.length){
+    h+='<div class="done" style="margin-top:18px"><div style="font-size:40px">🎉</div><div style="color:var(--ink-soft)">Emparejado en '+mgAttempts+' intento'+(mgAttempts!=1?'s':'')+'</div><button class="start" onclick="startMatchGame()">Otra ronda</button><button class="back" style="display:block;margin:14px auto 0" onclick="goVerbs()">← Verbos</button></div>';
+  }
+  stage.innerHTML=h;
+}
+function mgPick(side,id){
+  if(mgMatched.has(id))return;
+  if(side==='L'){mgSelLeft=id;renderMatchGame();return}
+  if(side==='R'){
+    if(mgSelLeft===null)return;
+    mgAttempts++;
+    if(mgSelLeft===id){mgMatched.add(id);mgSelLeft=null;renderMatchGame();}
+    else{
+      const stage=document.getElementById('verbMatchStage');
+      mgSelLeft=null;renderMatchGame();
+      stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),350);
+    }
+  }
+}
 function renderVerbs(){
   const stage=document.getElementById('verbsStage');
   let h='<div class="vsec-intro"><h2>🔤 Verbos</h2><p>Los verbos del día a día en kuwaití. Toca uno para ver tiempos y frases.</p></div>';
   h+='<button class="vpractice-btn" onclick="startVerbPractice()">🎯 Practicar verbos</button>';
-  h+='<button class="lvlbtn2" onclick="openVerbStudy()" style="margin-bottom:14px">📖 Estudiar verbos (tabla)</button>';
+  h+='<button class="lvlbtn2" onclick="openVerbStudy()" style="margin-bottom:8px">📖 Estudiar verbos (tabla)</button>';
+  h+='<button class="lvlbtn2" onclick="openVerbFlash()" style="margin-bottom:8px">🃏 Tarjetas de repaso</button>';
+  h+='<button class="lvlbtn2" onclick="startMatchGame()" style="margin-bottom:14px">🔗 Emparejar verbo y frase</button>';
   h+='<div class="viewtoggle" style="margin-bottom:14px"><button class="vtbtn on" id="vfAll" onclick="setVerbFilter(false)">Todos</button><button class="vtbtn" id="vfEss" onclick="setVerbFilter(true)">⭐ Los 25 esenciales</button></div>';
   Object.keys(VERBS2.categorias).forEach(cat=>{
     let verbs=VERBS2.categorias[cat];
@@ -1945,6 +2058,9 @@ function startVerbPractice(){
     if(v.yo){
       exercises.push({type:'write',v});
     }
+    // tipo 6: completa el hueco (solo si podemos verificar que la forma aparece tal cual en la frase)
+    const cloze=vpFindCloze(v);
+    if(cloze)exercises.push({type:'cloze',v,cloze});
   });
   shuffle(exercises);
   vpDeck=exercises.slice(0,15);vpIdx=0;vpScore=0;
@@ -1967,6 +2083,7 @@ function renderVerbPractice(){
   else if(ex.type==='conjugate')h+=vpConjugate(ex);
   else if(ex.type==='tense')h+=vpTense(ex);
   else if(ex.type==='write')h+=vpWrite(ex);
+  else if(ex.type==='cloze')h+=vpCloze(ex);
   else h+=vpPhrase(ex);
   h+='</div>';
   stage.innerHTML=h;
@@ -1974,6 +2091,7 @@ function renderVerbPractice(){
   if(ex.type==='recognize')speak(ex.v.pres);
   else if(ex.type==='conjugate'&&ex.v.conj[ex.pron])speak(ex.v.conj[ex.pron][1]);
   else if(ex.type==='tense')speak(ex.isPast?ex.v.past:ex.v.pres);
+  else if(ex.type==='cloze')speak(ex.cloze.f.ar);
   else if(ex.type==='write'){
     const inp=document.getElementById('vpInput');if(inp){inp.focus();inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!inp.disabled)vpCheckWrite()})}
   }
@@ -2051,8 +2169,47 @@ function vpCheckWrite(){
   else if(grade==='mid'){fb.className='wfeedback show good';fb.style.background='#FFF6E8';fb.innerHTML='🔶 Casi<div class="ans">'+v.yo+(v.yoar?' · '+v.yoar:'')+'</div>';}
   else{fb.className='wfeedback show bad';fb.innerHTML='La respuesta era:<div class="ans">'+v.yo+(v.yoar?' · '+v.yoar:'')+'</div><div style="margin-top:6px;font-size:13px">Tu respuesta: <i>'+val+'</i></div>';}
   if(voiceOn)speak(v.yoar||v.yo);
-  setTimeout(()=>{vpIdx++;renderVerbPractice();},grade==='ok'?1200:2200);
+  const card=inp.closest('.vp-card');
+  if(card){
+    const nextBtn=document.createElement('button');
+    nextBtn.className='lvlbtn';nextBtn.style.marginTop='16px';
+    nextBtn.textContent=(vpIdx>=vpDeck.length-1?'Ver resultado →':'Siguiente →');
+    nextBtn.onclick=vpGoNext;
+    card.appendChild(nextBtn);
+  }
 }
+function vpFindCloze(v){
+  // solo generamos hueco si podemos confirmar que la forma aparece literalmente en la frase (evita inventar)
+  if(!v.frases)return null;
+  for(const f of v.frases){
+    if(v.yoar&&f.ar.includes(v.yoar))return{f,form:v.yoar,formTr:v.yo};
+    if(v.pres&&f.ar.includes(v.pres))return{f,form:v.pres,formTr:v.prtr};
+    if(v.past&&f.ar.includes(v.past))return{f,form:v.past,formTr:v.ptr};
+  }
+  return null;
+}
+function vpCloze(ex){
+  const v=ex.v,c=ex.cloze;
+  const blankedAr=c.f.ar.replace(c.form,'____');
+  const correct={ar:c.form,tr:c.formTr};
+  let candidates=[];
+  if(v.past&&v.past!==c.form)candidates.push({ar:v.past,tr:v.ptr});
+  if(v.pres&&v.pres!==c.form)candidates.push({ar:v.pres,tr:v.prtr});
+  if(v.yoar&&v.yoar!==c.form)candidates.push({ar:v.yoar,tr:v.yo});
+  const all=allVerbsList();shuffle(all);
+  for(const o of all){if(candidates.length>=3)break;if(o!==v&&o.pres&&o.pres!==c.form)candidates.push({ar:o.pres,tr:o.prtr});}
+  shuffle(candidates);
+  let opts=[correct,...candidates.slice(0,3)];
+  shuffle(opts);
+  let h='<div class="vp-type">Completa el hueco</div>';
+  h+='<div class="vp-sub">'+c.f.es+'</div>';
+  h+='<div class="vp-big" style="direction:rtl;font-size:24px">'+blankedAr+'</div>';
+  h+='<div class="vp-opts">';
+  opts.forEach(o=>{h+='<button class="vp-opt ar" onclick="vpAnswer(this,'+(o.ar===correct.ar?'true':'false')+')">'+o.ar+'<div style="font-size:13px;direction:ltr;color:var(--clay);font-family:Space Grotesk">'+o.tr+'</div></button>';});
+  h+='</div>';
+  return h;
+}
+function vpGoNext(){vpIdx++;renderVerbPractice();}
 function vpAnswer(btn,correct){
   const opts=btn.parentElement.querySelectorAll('.vp-opt');
   opts.forEach(o=>o.style.pointerEvents='none');
@@ -2063,19 +2220,21 @@ function vpAnswer(btn,correct){
   }
   // frase de refuerzo para fijar el verbo en la memoria (salvo en el ejercicio de frase, que ya es una frase)
   const ex=vpDeck[vpIdx];const v=ex.v;
-  let waitMs=correct?800:1600;
-  if(ex.type!=='phrase'&&v.frases&&v.frases.length){
+  const card=btn.closest('.vp-card');
+  if(ex.type!=='phrase'&&v.frases&&v.frases.length&&card){
     const f=v.frases[0];
-    const card=btn.closest('.vp-card');
-    if(card){
-      const hint=document.createElement('div');
-      hint.className='vp-hint';
-      hint.innerHTML='💡 <span class="vp-hint-ar">'+f.ar+'</span><br><span class="vp-hint-tr">'+f.tr+'</span><br>'+f.es;
-      card.appendChild(hint);
-      waitMs=correct?1700:2400;
-    }
+    const hint=document.createElement('div');
+    hint.className='vp-hint';
+    hint.innerHTML='💡 <span class="vp-hint-ar">'+f.ar+'</span><br><span class="vp-hint-tr">'+f.tr+'</span><br>'+f.es;
+    card.appendChild(hint);
   }
-  setTimeout(()=>{vpIdx++;renderVerbPractice();},waitMs);
+  if(card){
+    const nextBtn=document.createElement('button');
+    nextBtn.className='lvlbtn';nextBtn.style.marginTop='16px';
+    nextBtn.textContent=(vpIdx>=vpDeck.length-1?'Ver resultado →':'Siguiente →');
+    nextBtn.onclick=vpGoNext;
+    card.appendChild(nextBtn);
+  }
 }
 
 
