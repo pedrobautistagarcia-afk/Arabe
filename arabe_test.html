@@ -1939,6 +1939,12 @@ function startVerbPractice(){
     if(v.frases&&v.frases.length>0){
       exercises.push({type:'phrase',v,frase:v.frases[Math.floor(Math.random()*v.frases.length)]});
     }
+    // tipo 4: ¿pasado o presente?
+    exercises.push({type:'tense',v,isPast:Math.random()<0.5});
+    // tipo 5: escribir el "yo" (si lo tenemos)
+    if(v.yo){
+      exercises.push({type:'write',v});
+    }
   });
   shuffle(exercises);
   vpDeck=exercises.slice(0,15);vpIdx=0;vpScore=0;
@@ -1959,12 +1965,18 @@ function renderVerbPractice(){
   h+='<div class="vp-card">';
   if(ex.type==='recognize')h+=vpRecognize(ex);
   else if(ex.type==='conjugate')h+=vpConjugate(ex);
+  else if(ex.type==='tense')h+=vpTense(ex);
+  else if(ex.type==='write')h+=vpWrite(ex);
   else h+=vpPhrase(ex);
   h+='</div>';
   stage.innerHTML=h;
   // leer en voz
   if(ex.type==='recognize')speak(ex.v.pres);
   else if(ex.type==='conjugate'&&ex.v.conj[ex.pron])speak(ex.v.conj[ex.pron][1]);
+  else if(ex.type==='tense')speak(ex.isPast?ex.v.past:ex.v.pres);
+  else if(ex.type==='write'){
+    const inp=document.getElementById('vpInput');if(inp){inp.focus();inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!inp.disabled)vpCheckWrite()})}
+  }
 }
 function vpRecognize(ex){
   const v=ex.v;
@@ -2006,6 +2018,40 @@ function vpPhrase(ex){
   opts.forEach(o=>{h+='<button class="vp-opt" style="font-size:14px" onclick="vpAnswer(this,'+(o===f?'true':'false')+')">'+o.es+'</button>';});
   h+='</div>';
   return h;
+}
+function vpTense(ex){
+  const v=ex.v,showPast=ex.isPast;
+  const form=showPast?v.past:v.pres,tr=showPast?v.ptr:v.prtr;
+  let h='<div class="vp-type">¿Pasado o presente?</div>';
+  h+='<div class="vp-sub">'+v.es+'</div>';
+  h+='<div class="vp-big">'+form+'</div><div class="vp-bigtr" style="font-size:18px">'+tr+'</div>';
+  h+='<div class="vp-opts">';
+  h+='<button class="vp-opt" onclick="vpAnswer(this,'+(showPast?'true':'false')+')">Pasado</button>';
+  h+='<button class="vp-opt" onclick="vpAnswer(this,'+(showPast?'false':'true')+')">Presente</button>';
+  h+='</div>';
+  return h;
+}
+function vpWrite(ex){
+  const v=ex.v;
+  let h='<div class="vp-type">Escribe "yo + verbo"</div>';
+  h+='<div class="vp-big" style="font-size:24px">'+v.es+'</div>';
+  h+='<input class="winput" id="vpInput" placeholder="transcripción, ej: '+(v.yo||'')+'" autocomplete="off" autocapitalize="off">';
+  h+='<button class="wbtn" id="vpCheckBtn" onclick="vpCheckWrite()">Comprobar</button>';
+  h+='<div class="wfeedback" id="vpfb"></div>';
+  return h;
+}
+function vpCheckWrite(){
+  const ex=vpDeck[vpIdx];const v=ex.v;
+  const inp=document.getElementById('vpInput');if(!inp)return;const val=inp.value;if(!val.trim())return;
+  const grade=gradeWrite(val,[v.yo]);
+  inp.disabled=true;const btn=document.getElementById('vpCheckBtn');if(btn)btn.style.display='none';
+  const fb=document.getElementById('vpfb');
+  if(grade==='ok'||grade==='mid')vpScore++;
+  if(grade==='ok'){fb.className='wfeedback show good';fb.innerHTML='✅ ¡Correcto!<div class="ans">'+v.yo+(v.yoar?' · '+v.yoar:'')+'</div>';}
+  else if(grade==='mid'){fb.className='wfeedback show good';fb.style.background='#FFF6E8';fb.innerHTML='🔶 Casi<div class="ans">'+v.yo+(v.yoar?' · '+v.yoar:'')+'</div>';}
+  else{fb.className='wfeedback show bad';fb.innerHTML='La respuesta era:<div class="ans">'+v.yo+(v.yoar?' · '+v.yoar:'')+'</div><div style="margin-top:6px;font-size:13px">Tu respuesta: <i>'+val+'</i></div>';}
+  if(voiceOn)speak(v.yoar||v.yo);
+  setTimeout(()=>{vpIdx++;renderVerbPractice();},grade==='ok'?1200:2200);
 }
 function vpAnswer(btn,correct){
   const opts=btn.parentElement.querySelectorAll('.vp-opt');
