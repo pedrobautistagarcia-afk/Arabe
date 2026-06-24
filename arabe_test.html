@@ -310,14 +310,25 @@
   .lvlbtn2:hover{background:#E8F6F2}
   .testbtn{margin-top:8px;width:100%;background:#C8902F;color:#fff;border:none;border-radius:12px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
   .testbtn:hover{filter:brightness(.95)}
-  .studyTopic{margin-top:18px}
-  .studyTopicHead{font-weight:700;font-size:14px;color:var(--clay-deep);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--line)}
-  .studyRow{display:flex;align-items:center;gap:12px;background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:10px 13px;margin-bottom:8px}
-  .studyEmoji{font-size:22px;width:30px;text-align:center;flex-shrink:0}
-  .studyMain{flex:1;min-width:0}
-  .studyAr{font-size:18px;direction:rtl;font-weight:600}
-  .studyTr{font-size:12px;color:#8A9AA2;font-style:italic}
-  .studyEs{font-size:13px;color:#3E5159;margin-top:2px}
+  .wrap.wide{max-width:1180px}
+  .studyTableWrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;margin-top:10px}
+  table.studyTable{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--paper)}
+  table.studyTable thead th{position:sticky;top:0;background:var(--sand);font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#5A6B73;text-align:left;padding:5px 8px;border-bottom:2px solid var(--line)}
+  table.studyTable td{padding:3px 8px;border-bottom:1px solid var(--line-soft,#EEF2F3);vertical-align:middle;line-height:1.25}
+  table.studyTable tr.topicRow td{background:var(--sand);font-weight:700;color:var(--clay-deep);font-size:11px;padding:6px 8px}
+  table.studyTable tr.wordRow:hover{background:#FAFCFC}
+  table.studyTable tr.mastered{background:#E8F6F2}
+  table.studyTable tr.mastered:hover{background:#DDF1ED}
+  table.studyTable td.colEmoji{width:22px;text-align:center;font-size:14px}
+  table.studyTable td.colAr{direction:rtl;font-size:14px;font-weight:600;white-space:nowrap}
+  table.studyTable td.colTr{color:#8A9AA2;font-style:italic;white-space:nowrap;font-size:12px}
+  table.studyTable td.colEs{color:var(--ink)}
+  table.studyTable td.colCheck{width:20px;text-align:center;font-size:11px}
+  table.studyTable td.colSpeak{width:24px;text-align:center}
+  table.studyTable .miniSpeak{background:none;border:none;cursor:pointer;font-size:13px;padding:0;line-height:1}
+  .studyLegend{display:flex;gap:14px;align-items:center;justify-content:center;font-size:12px;color:#5A6B73;margin:10px 0 4px;flex-wrap:wrap}
+  .studyLegend span{display:flex;align-items:center;gap:5px}
+  .legendDot{width:11px;height:11px;border-radius:3px;display:inline-block}
   .lockmsg{font-size:12px;color:#9DB0B8;margin-top:10px;text-align:center;font-style:italic}
 
   /* DIALOGS */
@@ -877,7 +888,7 @@ function renderStreak(){const s=loadStreak();const b=document.getElementById('st
 }
 
 /* ---------- NAV ---------- */
-function hideAll(){['home','explore','setup','dictSetup','conjSetup','dialogs','levels','levelStudy','build','verbs','numhora','study'].forEach(id=>document.getElementById(id).style.display='none')}
+function hideAll(){const w=document.querySelector('.wrap');if(w)w.classList.remove('wide');['home','explore','setup','dictSetup','conjSetup','dialogs','levels','levelStudy','build','verbs','numhora','study'].forEach(id=>document.getElementById(id).style.display='none')}
 function goHome(){curLevel=null;hideAll();document.getElementById('home').style.display='block';speechSynthesis&&speechSynthesis.cancel();renderHome()}
 function goExplore(){hideAll();document.getElementById('explore').style.display='block';renderExplore()}
 function goPractice(){hideAll();document.getElementById('setup').style.display='block';globalStat();updateMeta()}
@@ -1463,21 +1474,32 @@ function renderLevels(){
 function openLevelStudy(L){
   if(!levelUnlocked(L))return;
   curLevel=L;
-  hideAll();document.getElementById('levelStudy').style.display='block';
+  hideAll();
+  const w=document.querySelector('.wrap');if(w)w.classList.add('wide');
+  document.getElementById('levelStudy').style.display='block';
   const words=(LEVELS.levels[String(L)]||[]).slice();
   const m=LEVELS.meta[String(L)];
-  const byTopic={};words.forEach(w=>{(byTopic[w.topic||'Otros']=byTopic[w.topic||'Otros']||[]).push(w)});
-  let h='<div style="text-align:center;margin-bottom:8px"><div style="font-family:\'Fraunces\',serif;font-size:24px;font-weight:600">'+m.icon+' '+m.name+'</div><div style="font-size:13px;color:#5A6B73;margin-top:4px">'+words.length+' palabras · repásalas antes del mini-test</div></div>';
+  const byTopic={};words.forEach(ww=>{(byTopic[ww.topic||'Otros']=byTopic[ww.topic||'Otros']||[]).push(ww)});
+  const masteredCount=words.filter(wordMastered).length;
+  let h='<div style="text-align:center;margin-bottom:6px"><div style="font-family:\'Fraunces\',serif;font-size:24px;font-weight:600">'+m.icon+' '+m.name+'</div><div style="font-size:13px;color:#5A6B73;margin-top:4px">'+words.length+' palabras · '+masteredCount+' ya dominadas</div></div>'+
+    '<div class="studyLegend"><span><span class="legendDot" style="background:#E8F6F2;border:1px solid var(--ok)"></span>Ya la sabes</span><span><span class="legendDot" style="background:var(--paper);border:1px solid var(--line)"></span>Por repasar</span></div>';
+  h+='<div class="studyTableWrap"><table class="studyTable"><thead><tr><th></th><th>Árabe</th><th>Transcripción</th><th>Español</th><th></th><th></th></tr></thead><tbody>';
   Object.keys(byTopic).forEach(t=>{
-    h+='<div class="studyTopic"><div class="studyTopicHead">'+t+'</div>';
-    byTopic[t].forEach(w=>{
-      const arS=sayAr(w).replace(/'/g,"\\'");
-      h+='<div class="studyRow">'+(w.emoji?'<div class="studyEmoji">'+w.emoji+'</div>':'')+
-        '<div class="studyMain">'+(w.ar?'<div class="studyAr">'+w.ar+'</div>':'')+(w.tr?'<div class="studyTr">'+w.tr+'</div>':'')+'<div class="studyEs">'+w.es+'</div></div>'+
-        (w.ar?'<button class="speak" style="position:static;flex-shrink:0" onclick="speak(\''+arS+'\')">🔊</button>':'')+'</div>';
+    h+='<tr class="topicRow"><td colspan="6">'+t+'</td></tr>';
+    byTopic[t].forEach(ww=>{
+      const arS=sayAr(ww).replace(/'/g,"\\'");
+      const known=wordMastered(ww);
+      h+='<tr class="wordRow'+(known?' mastered':'')+'">'+
+        '<td class="colEmoji">'+(ww.emoji||'')+'</td>'+
+        '<td class="colAr">'+(ww.ar||'')+'</td>'+
+        '<td class="colTr">'+(ww.tr||'')+'</td>'+
+        '<td class="colEs">'+ww.es+'</td>'+
+        '<td class="colCheck">'+(known?'✅':'')+'</td>'+
+        '<td class="colSpeak">'+(ww.ar?'<button class="miniSpeak" onclick="speak(\''+arS+'\')">🔊</button>':'')+'</td>'+
+        '</tr>';
     });
-    h+='</div>';
   });
+  h+='</tbody></table></div>';
   h+='<button class="lvlbtn" style="margin-top:18px" onclick="startLevel('+L+')">🎯 Practicar este nivel</button>';
   document.getElementById('levelStudyStage').innerHTML=h;
 }
