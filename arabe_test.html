@@ -969,7 +969,8 @@ function initSync(){
         firebase.initializeApp(FIREBASE_CONFIG);
         fbDb=firebase.firestore();
         syncReady=true;
-        if(syncCode){pullFromCloud(syncCode)}else{syncStatus='nocode';renderSyncBadge()}
+        if(pendingLinkCode){const c=pendingLinkCode;pendingLinkCode=null;pullFromCloud(c)}
+        else if(syncCode){pullFromCloud(syncCode)}else{syncStatus='nocode';renderSyncBadge()}
       }catch(e){syncStatus='error';renderSyncBadge()}
     };
     s2.onerror=()=>{syncStatus='error';renderSyncBadge()};
@@ -1065,6 +1066,7 @@ function queuePush(){
   clearTimeout(pushTimer);
   pushTimer=setTimeout(pushToCloud,2000);
 }
+let pendingLinkCode=null;
 function linkDevice(){
   const inp=document.getElementById('syncCodeInput');
   if(!inp)return;
@@ -1072,8 +1074,10 @@ function linkDevice(){
   if(!code){return}
   localStorage.setItem(SYNCCODEKEY,code);
   syncCode=code;
+  syncStatus='connecting';
+  renderProgDetail(); // refresco inmediato para que se vea el cambio (antes se quedaba como si no hiciera nada)
   if(syncReady)pullFromCloud(code);
-  else renderSyncBadge();
+  else pendingLinkCode=code; // se intentará solo en cuanto Firebase termine de cargar
 }
 function unlinkDevice(){
   if(!confirm('¿Desvincular este dispositivo? Tus datos seguirán a salvo en la nube con tu código.'))return;
@@ -1437,25 +1441,33 @@ function renderSyncPanel(){
 }
 function renderProgDetail(){
   const cont=document.getElementById('progDetail');if(!cont)return;
-  let ok=0,mid=0,no=0,total=0;TOPICS.forEach(t=>VOCAB[t].forEach(w=>{total++;const s=getStatus(w);if(s==='ok')ok++;else if(s==='mid')mid++;else if(s==='no')no++}));
-  let html='<div class="statbar" style="margin-top:14px">'+
-    '<div class="sb"><div class="n ok">'+ok+'</div><div class="l">Dominadas</div></div>'+
-    '<div class="sb"><div class="n mid">'+mid+'</div><div class="l">A mejorar</div></div>'+
-    '<div class="sb"><div class="n no">'+no+'</div><div class="l">Por aprender</div></div>'+
-    '<div class="sb"><div class="n">'+(total-ok-mid-no)+'</div><div class="l">Sin ver</div></div></div>';
-  // panel categorías
-  const stat={};CAT_ORDER.forEach(c=>stat[c]={ok:0,total:0});
-  TOPICS.forEach(t=>VOCAB[t].forEach(w=>{const c=w.cat||'sustantivo';if(!stat[c])stat[c]={ok:0,total:0};stat[c].total++;if(getStatus(w)==='ok')stat[c].ok++}));
-  html+='<div class="progpanel"><h3>Por categoría</h3>';
-  CAT_ORDER.forEach(c=>{const s=stat[c];if(!s||s.total===0)return;const mm=CATEGORIES[c];const pct=Math.round(s.ok/s.total*100);
-    html+='<div class="catrow"><div class="caticon">'+mm.icon+'</div><div class="catinfo"><div class="catname"><span>'+mm.name+' <span style="color:#9DB0B8;font-weight:500">'+s.ok+'/'+s.total+'</span></span><span class="catpct" style="color:'+mm.color+'">'+pct+'%</span></div><div class="catbar-track"><div class="catbar-fill" style="width:'+pct+'%;background:'+mm.color+'"></div></div></div></div>';
-  });
-  html+='</div>';
-  html+=renderProgressChart();
-  html+=renderBadges();
-  html+=renderSyncPanel();
+  let html='';
+  try{
+    let ok=0,mid=0,no=0,total=0;TOPICS.forEach(t=>VOCAB[t].forEach(w=>{total++;const s=getStatus(w);if(s==='ok')ok++;else if(s==='mid')mid++;else if(s==='no')no++}));
+    html+='<div class="statbar" style="margin-top:14px">'+
+      '<div class="sb"><div class="n ok">'+ok+'</div><div class="l">Dominadas</div></div>'+
+      '<div class="sb"><div class="n mid">'+mid+'</div><div class="l">A mejorar</div></div>'+
+      '<div class="sb"><div class="n no">'+no+'</div><div class="l">Por aprender</div></div>'+
+      '<div class="sb"><div class="n">'+(total-ok-mid-no)+'</div><div class="l">Sin ver</div></div></div>';
+  }catch(e){console.error('renderProgDetail: stats',e)}
+  try{
+    const stat={};CAT_ORDER.forEach(c=>stat[c]={ok:0,total:0});
+    TOPICS.forEach(t=>VOCAB[t].forEach(w=>{const c=w.cat||'sustantivo';if(!stat[c])stat[c]={ok:0,total:0};stat[c].total++;if(getStatus(w)==='ok')stat[c].ok++}));
+    let catHtml='<div class="progpanel"><h3>Por categoría</h3>';
+    CAT_ORDER.forEach(c=>{const s=stat[c];if(!s||s.total===0)return;const mm=CATEGORIES[c];const pct=Math.round(s.ok/s.total*100);
+      catHtml+='<div class="catrow"><div class="caticon">'+mm.icon+'</div><div class="catinfo"><div class="catname"><span>'+mm.name+' <span style="color:#9DB0B8;font-weight:500">'+s.ok+'/'+s.total+'</span></span><span class="catpct" style="color:'+mm.color+'">'+pct+'%</span></div><div class="catbar-track"><div class="catbar-fill" style="width:'+pct+'%;background:'+mm.color+'"></div></div></div></div>';
+    });
+    catHtml+='</div>';
+    html+=catHtml;
+  }catch(e){console.error('renderProgDetail: categorias',e)}
+  try{html+=renderProgressChart()}catch(e){console.error('renderProgDetail: chart',e)}
+  try{html+=renderBadges()}catch(e){console.error('renderProgDetail: badges',e)}
+  try{html+=renderSyncPanel()}catch(e){
+    console.error('renderProgDetail: sync',e);
+    html+='<div class="progpanel"><h3>Sincronizar entre dispositivos</h3><div style="font-size:12px;color:#C0392B">Hubo un problema mostrando este panel. Cierra "Ver mi progreso" y vuelve a abrirlo.</div></div>';
+  }
   cont.innerHTML=html;
-  renderSyncBadge();
+  try{renderSyncBadge()}catch(e){}
 }
 function toggleProg(){
   const d=document.getElementById('progDetail');const t=document.getElementById('progToggle');
