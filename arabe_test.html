@@ -978,46 +978,87 @@ function initSync(){
   s1.onerror=()=>{syncStatus='error';renderSyncBadge()};
   document.head.appendChild(s1);
 }
-function gatherAllData(){
-  return {
-    prog: localStorage.getItem(PKEY),
-    leveltests: localStorage.getItem(LTKEY),
-    streak: localStorage.getItem(SKEY),
-    days: localStorage.getItem(DKEY),
-    snapshots: localStorage.getItem(SNAPKEY),
-    edits: localStorage.getItem(EKEY),
-    updatedAt: Date.now()
-  };
+function safeParse(s,fallback){try{const v=JSON.parse(s);return v==null?fallback:v}catch(e){return fallback}}
+function mergeProg(localStr,cloudStr){
+  const local=safeParse(localStr,{}),cloud=safeParse(cloudStr,{});
+  const out={...cloud};
+  Object.keys(local).forEach(k=>{
+    const l=local[k],c=cloud[k];
+    if(!c||(l.t||0)>=(c.t||0))out[k]=l;
+  });
+  return out;
 }
-function pushToCloud(){
-  if(!syncReady||!syncCode){return}
-  syncStatus='connecting';renderSyncBadge();
-  fbDb.collection('pedrolingo_users').doc(syncCode).set(gatherAllData())
-    .then(()=>{syncStatus='synced';renderSyncBadge()})
-    .catch(()=>{syncStatus='error';renderSyncBadge()});
+function mergeLevelTests(localStr,cloudStr){
+  const local=safeParse(localStr,{}),cloud=safeParse(cloudStr,{});
+  const out={...cloud};
+  Object.keys(local).forEach(k=>{if(local[k])out[k]=true});
+  return out;
 }
-function pullFromCloud(code){
-  if(!syncReady)return;
+function mergeDays(localStr,cloudStr){
+  const local=safeParse(localStr,[]),cloud=safeParse(cloudStr,[]);
+  return Array.from(new Set([...local,...cloud]));
+}
+function mergeSnapshots(localStr,cloudStr){
+  const local=safeParse(localStr,{}),cloud=safeParse(cloudStr,{});
+  const out={...cloud};
+  Object.keys(local).forEach(k=>{out[k]=Math.max(local[k]||0,cloud[k]||0)});
+  return out;
+}
+function mergeEdits(localStr,cloudStr){
+  const local=safeParse(localStr,{}),cloud=safeParse(cloudStr,{});
+  return {...cloud,...local}; // si hay conflicto en la misma palabra, gana la edición de este dispositivo (la más probable de ser la reciente)
+}
+function computeStreakFromDays(days){
+  const uniq=Array.from(new Set(days));
+  if(!uniq.length)return {count:0,last:null};
+  const dates=uniq.map(d=>{const p=d.split('-').map(Number);return {str:d,date:new Date(p[0],p[1]-1,p[2])}});
+  dates.sort((a,b)=>a.date-b.date);
+  const last=dates[dates.length-1].str;
+  let count=1;
+  for(let i=dates.length-1;i>0;i--){
+    const diff=Math.round((dates[i].date-dates[i-1].date)/DAY);
+    if(diff===1)count++;else break;
+  }
+  return {count,last};
+}
+// Sincronización real: descarga lo que haya en la nube, lo fusiona clave a clave con
+// lo de este dispositivo (sin que nadie pierda progreso), guarda el resultado fusionado
+// aquí y lo vuelve a subir, para que los dos lados queden exactamente iguales.
+function syncMerge(reloadAfter){
+  if(!syncReady||!syncCode)return;
   syncStatus='connecting';renderSyncBadge();
-  fbDb.collection('pedrolingo_users').doc(code).get().then(snap=>{
-    if(!snap.exists){syncStatus='synced';renderSyncBadge();pushToCloud();return}
-    const data=snap.data();
-    const localUpdated=Number(localStorage.getItem(LASTLOCALKEY)||0);
-    if(data.updatedAt && data.updatedAt>localUpdated){
-      if(data.prog!=null)localStorage.setItem(PKEY,data.prog);
-      if(data.leveltests!=null)localStorage.setItem(LTKEY,data.leveltests);
-      if(data.streak!=null)localStorage.setItem(SKEY,data.streak);
-      if(data.days!=null)localStorage.setItem(DKEY,data.days);
-      if(data.snapshots!=null)localStorage.setItem(SNAPKEY,data.snapshots);
-      if(data.edits!=null)localStorage.setItem(EKEY,data.edits);
-      localStorage.setItem(LASTLOCALKEY,data.updatedAt);
-      syncStatus='synced';
-      location.reload();
-    }else{
+  fbDb.collection('pedrolingo_users').doc(syncCode).get().then(snap=>{
+    const cloud=snap.exists?snap.data():{};
+    const mergedProg=mergeProg(localStorage.getItem(PKEY),cloud.prog);
+    const mergedTests=mergeLevelTests(localStorage.getItem(LTKEY),cloud.leveltests);
+    const mergedDays=mergeDays(localStorage.getItem(DKEY),cloud.days);
+    const mergedSnaps=mergeSnapshots(localStorage.getItem(SNAPKEY),cloud.snapshots);
+    const mergedEdits=mergeEdits(localStorage.getItem(EKEY),cloud.edits);
+    const mergedStreak=computeStreakFromDays(mergedDays);
+    const payload={
+      prog:JSON.stringify(mergedProg),
+      leveltests:JSON.stringify(mergedTests),
+      days:JSON.stringify(mergedDays),
+      snapshots:JSON.stringify(mergedSnaps),
+      edits:JSON.stringify(mergedEdits),
+      streak:JSON.stringify(mergedStreak),
+      updatedAt:Date.now()
+    };
+    localStorage.setItem(PKEY,payload.prog);
+    localStorage.setItem(LTKEY,payload.leveltests);
+    localStorage.setItem(DKEY,payload.days);
+    localStorage.setItem(SNAPKEY,payload.snapshots);
+    localStorage.setItem(EKEY,payload.edits);
+    localStorage.setItem(SKEY,payload.streak);
+    localStorage.setItem(LASTLOCALKEY,payload.updatedAt);
+    return fbDb.collection('pedrolingo_users').doc(syncCode).set(payload).then(()=>{
       syncStatus='synced';renderSyncBadge();
-    }
+      if(reloadAfter)location.reload();
+    });
   }).catch(()=>{syncStatus='error';renderSyncBadge()});
 }
+function pushToCloud(){syncMerge(false)}
+function pullFromCloud(code){if(code)syncCode=code;syncMerge(true)}
 function queuePush(){
   localStorage.setItem(LASTLOCALKEY,Date.now());
   if(!syncCode)return;
@@ -1161,8 +1202,8 @@ function getRec(w){return loadProg()[wordKey(w)]||null}
 function getStatus(w){const r=getRec(w);return r?r.s:null}
 function updateRec(w,result){const p=loadProg();const k=wordKey(w);const cur=p[k]||{box:0};let box=cur.box||0;
   if(result==='ok')box=Math.min(box+1,INTERVALS.length-1);else if(result==='mid')box=Math.max(box,1);else box=0;
-  p[k]={s:result,box:box,due:Date.now()+INTERVALS[box]*DAY};saveProg(p)}
-function markKnown(w){const p=loadProg();p[wordKey(w)]={s:'ok',box:INTERVALS.length-1,due:Date.now()+INTERVALS[INTERVALS.length-1]*DAY};saveProg(p);renderExplore()}
+  p[k]={s:result,box:box,due:Date.now()+INTERVALS[box]*DAY,t:Date.now()};saveProg(p)}
+function markKnown(w){const p=loadProg();p[wordKey(w)]={s:'ok',box:INTERVALS.length-1,due:Date.now()+INTERVALS[INTERVALS.length-1]*DAY,t:Date.now()};saveProg(p);renderExplore()}
 function dueWords(){const p=loadProg();const now=Date.now();const out=[];TOPICS.forEach(t=>VOCAB[t].forEach(w=>{const r=p[wordKey(w)];if(r&&r.due&&r.due<=now)out.push({...w,topic:t})}));return out}
 
 /* ---------- MINI-TEST DE NIVEL ---------- */
