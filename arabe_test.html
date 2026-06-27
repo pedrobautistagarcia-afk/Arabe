@@ -1801,9 +1801,7 @@ function renderClases(){
 }
 function startClasePractice(n){
   sessionType='practice';curLevel=null;
-  let pool=getClaseWords(n).slice();
-  shuffle(pool);
-  if(pool.length>15)pool=pool.slice(0,15);
+  let pool=orderShortFirst(getClaseWords(n),16,8);
   if(!pool.length)return;
   deck=pool.map(w=>{let d=Math.random()<.5?'es2ar':'ar2es';let m=pickModeFor(w);return{w,d,m}});
   idx=0;score={ok:0,mid:0,no:0};
@@ -1819,7 +1817,7 @@ function openClase(n){
   verbs.forEach(v=>{const t=v.topic||'Otros';(byTopic[t]=byTopic[t]||{verbs:[],words:[]}).verbs.push(v)});
   words.forEach(ww=>{const t=ww.topic||'Otros';(byTopic[t]=byTopic[t]||{verbs:[],words:[]}).words.push(ww)});
   let h='<div style="text-align:center;margin-bottom:6px"><div style="font-family:\'Fraunces\',serif;font-size:24px;font-weight:600">'+m.icon+' Clase '+n+'</div><div style="font-size:13px;color:#5A6B73;margin-top:4px">'+m.fecha+'</div></div>';
-  h+='<button class="lvlbtn" style="margin-bottom:18px" onclick="startClasePractice('+n+')">🎯 Practicar toda la clase</button>';
+  h+='<button class="lvlbtn" style="margin-bottom:18px" onclick="startClaseFull('+n+')">🎯 Practicar toda la clase</button>';
   Object.keys(byTopic).forEach(t=>{
     const grp=byTopic[t];
     h+='<div class="topicRow" style="border-radius:10px;margin:18px 0 8px">📚 '+t+'</div>';
@@ -2388,8 +2386,9 @@ function buildVerbExercises(verbs){
   });
   return exercises;
 }
-function vpRestart(){if(vpMode==='topic')startClaseTopicVerbs(vpTopicClase,vpTopicName);else startVerbPractice(vpCategory);}
-function vpBack(){if(vpMode==='topic')openClase(vpTopicClase);else renderVerbs();}
+function vpRestart(){if(vpMode==='topic')startClaseTopicVerbs(vpTopicClase,vpTopicName);else if(vpMode==='claseAll')startVerbsForClase(vpTopicClase);else startVerbPractice(vpCategory);}
+function vpBack(){if(vpMode==='topic'||vpMode==='claseAll')openClase(vpTopicClase);else renderVerbs();}
+function vpContinueWords(){if(vpMode==='topic')startClaseTopicWords(vpTopicClase,vpTopicName);else if(vpMode==='claseAll')startClasePractice(vpTopicClase);}
 function startClaseTopicVerbs(n,topic){
   const verbs=getClaseVerbs(n).filter(v=>v.topic===topic);
   if(!verbs.length)return;
@@ -2400,11 +2399,31 @@ function startClaseTopicVerbs(n,topic){
   hideAll();document.getElementById('verbs').style.display='block';
   renderVerbPractice();
 }
+function startVerbsForClase(n){
+  const verbs=getClaseVerbs(n);
+  if(!verbs.length)return;
+  vpMode='claseAll';vpTopicClase=n;vpTopicName=null;vpCategory='Clase '+n+' · todos los verbos';
+  let exercises=buildVerbExercises(verbs);
+  shuffle(exercises);
+  vpDeck=exercises.slice(0,24);vpIdx=0;vpScore=0;
+  hideAll();document.getElementById('verbs').style.display='block';
+  renderVerbPractice();
+}
+// Reordena un grupo de palabras dejando primero lo corto (sustantivos/adjetivos)
+// y al final las frases largas, para no mezclarlas hasta dominar lo corto.
+function orderShortFirst(pool,capShort,capLong){
+  let short=shuffle(pool.filter(w=>w.cat!=='frase'));
+  let long=shuffle(pool.filter(w=>w.cat==='frase'));
+  if(capShort!=null)short=short.slice(0,capShort);
+  if(capLong!=null)long=long.slice(0,capLong);
+  return short.concat(long);
+}
+function startClaseFull(n){
+  if(getClaseVerbs(n).length)startVerbsForClase(n);else startClasePractice(n);
+}
 function startClaseTopicWords(n,topic){
   sessionType='practice';curLevel=null;
-  let pool=getClaseWords(n).filter(w=>w.topic===topic);
-  shuffle(pool);
-  if(pool.length>15)pool=pool.slice(0,15);
+  let pool=orderShortFirst(getClaseWords(n).filter(w=>w.topic===topic),10,6);
   if(!pool.length)return;
   deck=pool.map(w=>{let d=Math.random()<.5?'es2ar':'ar2es';let m=pickModeFor(w);return{w,d,m}});
   idx=0;score={ok:0,mid:0,no:0};
@@ -2424,7 +2443,7 @@ function renderVerbPractice(){
   if(vpIdx>=vpDeck.length){
     touchStreak();
     const pct=Math.round(vpScore/vpDeck.length*100);
-    stage.innerHTML='<div class="done"><div style="font-size:46px">'+(pct>=70?'🎉':'💪')+'</div><div class="dscore">'+vpScore+' / '+vpDeck.length+'</div>'+(vpCategory?'<div style="font-size:12px;color:#9DB0B8;margin-top:-6px">'+vpCategory+'</div>':'')+'<div style="color:var(--ink-soft);margin:8px 0 18px">'+(pct>=70?'¡Muy bien!':'Sigue practicando')+'</div><button class="start" onclick="vpRestart()">Otra ronda</button><button class="back" style="display:block;margin:14px auto 0" onclick="vpBack()">← Volver</button></div>';
+    stage.innerHTML='<div class="done"><div style="font-size:46px">'+(pct>=70?'🎉':'💪')+'</div><div class="dscore">'+vpScore+' / '+vpDeck.length+'</div>'+(vpCategory?'<div style="font-size:12px;color:#9DB0B8;margin-top:-6px">'+vpCategory+'</div>':'')+'<div style="color:var(--ink-soft);margin:8px 0 18px">'+(pct>=70?'¡Muy bien!':'Sigue practicando')+'</div>'+((vpMode==='topic'||vpMode==='claseAll')?'<button class="start" style="display:block;margin:0 auto 10px" onclick="vpContinueWords()">Seguir con vocabulario →</button>':'')+'<button class="start" onclick="vpRestart()">Otra ronda</button><button class="back" style="display:block;margin:14px auto 0" onclick="vpBack()">← Volver</button></div>';
     return;
   }
   const ex=vpDeck[vpIdx];
