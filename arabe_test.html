@@ -1054,7 +1054,7 @@ function syncMerge(reloadAfter){
     localStorage.setItem(LASTLOCALKEY,payload.updatedAt);
     return fbDb.collection('pedrolingo_users').doc(syncCode).set(payload).then(()=>{
       syncStatus='synced';renderSyncBadge();
-      if(reloadAfter)location.reload();
+      if(reloadAfter&&document.getElementById('home').style.display!=='none')renderHome(); // refresca los datos sin recargar toda la página (un reload aquí era lo que rompía el primer toque a "Ver mi progreso")
     });
   }).catch(()=>{syncStatus='error';renderSyncBadge()});
 }
