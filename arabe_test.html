@@ -41,7 +41,7 @@
   .wrap{max-width:680px;margin:0 auto;padding:0 16px 90px}
   header{text-align:center;padding:26px 16px 30px;margin:0 -16px 20px;position:relative;overflow:hidden;
     background:linear-gradient(135deg,var(--clay) 0%,var(--clay-deep) 100%);
-    border-radius:0 0 30px 30px;box-shadow:var(--shadow-lg)}
+    border-radius:0 0 14px 14px;box-shadow:var(--shadow-lg)}
   header::before{content:'';position:absolute;inset:0;pointer-events:none;
     background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2756%27%20height%3D%2756%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23ffffff%27%20stroke-opacity%3D%270.16%27%20stroke-width%3D%271.1%27%3E%3Cpath%20d%3D%27M28%200L56%2028L28%2056L0%2028Z%27/%3E%3Cpath%20d%3D%27M28%2012L44%2028L28%2044L12%2028Z%27/%3E%3C/g%3E%3C/svg%3E");
     background-size:56px 56px}
@@ -224,14 +224,23 @@
   .lc-go{flex-shrink:0;font-size:20px;color:rgba(255,255,255,.7)}
   /* ACTION LIST (filas compactas) */
   .actionlist{display:flex;flex-direction:column;gap:8px}
-  .sectionLabel{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9DB0B8;margin:20px 4px 9px}
-  .tilegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  .tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;aspect-ratio:1/1;border:none;border-radius:18px;padding:8px 6px;cursor:pointer;font-family:inherit;color:#fff;transition:.22s cubic-bezier(.2,.7,.3,1);text-align:center;box-shadow:var(--shadow-md)}
-  .tile:hover{transform:translateY(-3px) scale(1.02);box-shadow:var(--shadow-lg)}
-  .tile:active{transform:translateY(-1px) scale(.96);transition:.08s}
-  .tile-ic{flex-shrink:0;width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;background:rgba(255,255,255,.24)}
-  .tile-t{font-weight:700;font-size:11.5px;line-height:1.15;color:#fff}
-  .todoCard{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-top:14px;box-shadow:var(--shadow-sm)}
+  .indexGroup{margin-top:30px}
+  .indexGroup:first-of-type{margin-top:22px}
+  .indexLabel{display:flex;align-items:baseline;gap:10px;margin:0 2px 4px}
+  .indexLabel .num{font-family:'Fraunces',serif;font-size:13px;font-weight:600;color:var(--clay);letter-spacing:.02em}
+  .indexLabel .word{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#8C9A98}
+  .indexLabel::after{content:'';flex:1;height:1px;background:var(--line)}
+  .indexList{display:flex;flex-direction:column;gap:7px}
+  .indexRow{display:flex;align-items:center;gap:14px;width:100%;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.32);border-radius:13px;padding:13px 12px;cursor:pointer;font-family:inherit;color:var(--ink);text-align:left;transition:.18s;backdrop-filter:blur(2px)}
+  .indexRow:hover{background:rgba(255,255,255,.42);border-color:rgba(255,255,255,.5);transform:translateY(-1px)}
+  .indexRow:active{background:rgba(255,255,255,.5);transform:translateY(0)}
+  .indexIc{flex-shrink:0;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:16px;filter:grayscale(1) contrast(.9);opacity:.75}
+  .indexTxt{flex:1;min-width:0}
+  .indexT{font-family:'Fraunces',serif;font-weight:600;font-size:16px;line-height:1.2;color:var(--ink)}
+  .indexD{font-size:11.5px;color:#8C9A98;margin-top:1px}
+  .indexGo{flex-shrink:0;font-family:'Fraunces',serif;font-size:18px;color:#C7BBA3;transition:.15s}
+  .indexRow:hover .indexGo{color:var(--clay);transform:translateX(2px)}
+  .todoCard{background:none;border:none;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:13px 2px;margin-top:18px}
   .todoCard h4{margin:0 0 8px;font-size:12px;font-weight:700;color:#5A6B73;text-transform:uppercase;letter-spacing:.06em}
   .todoRow{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line-soft,#EEF2F3)}
   .todoRow:last-child{border-bottom:none}
@@ -594,27 +603,33 @@
     <div id="weekSummary"></div>
     <!-- qué toca repasar hoy (niveles + clases) -->
     <div id="todoSummary"></div>
-    <!-- acciones principales, en malla de cuadraditos -->
-    <div class="sectionLabel">📚 Aprender</div>
-    <div class="tilegrid">
-      <button class="tile" style="background:linear-gradient(135deg,#3F6F6D,#2D4F4E)" onclick="goLevels()"><span class="tile-ic">🗺️</span><span class="tile-t">Niveles</span></button>
-      <button class="tile" style="background:linear-gradient(135deg,#C9A368,#A37D45)" onclick="goClases()"><span class="tile-ic">🎓</span><span class="tile-t">Mis clases</span></button>
-      <button class="tile" style="background:linear-gradient(135deg,#B07355,#8C5A41)" onclick="goSynonyms()"><span class="tile-ic">⚖️</span><span class="tile-t">Formas dobles</span></button>
+    <!-- acciones principales, como índice editorial -->
+    <div class="indexGroup">
+      <div class="indexLabel"><span class="num">I</span><span class="word">Aprender</span></div>
+      <div class="indexList">
+        <button class="indexRow" onclick="goLevels()"><span class="indexIc">🗺️</span><span class="indexTxt"><span class="indexT">Niveles</span><span class="indexD">Tu ruta paso a paso</span></span><span class="indexGo">→</span></button>
+        <button class="indexRow" onclick="goClases()"><span class="indexIc">🎓</span><span class="indexTxt"><span class="indexT">Mis clases</span><span class="indexD">Lo visto con tu profesor</span></span><span class="indexGo">→</span></button>
+        <button class="indexRow" onclick="goSynonyms()"><span class="indexIc">⚖️</span><span class="indexTxt"><span class="indexT">Formas dobles</span><span class="indexD">Sinónimos para no confundir</span></span><span class="indexGo">→</span></button>
+      </div>
     </div>
-    <div class="sectionLabel">🎯 Practicar</div>
-    <div class="tilegrid">
-      <button class="tile" style="background:linear-gradient(135deg,#6E93B5,#4F708F)" onclick="goPractice()"><span class="tile-ic">🎯</span><span class="tile-t">Practicar</span></button>
-      <button class="tile" style="background:linear-gradient(135deg,#C9A368,#A37D45)" onclick="goVerbs()"><span class="tile-ic">🔀</span><span class="tile-t">Verbos</span></button>
-      <button class="tile" style="background:linear-gradient(135deg,#6FA08E,#517566)" onclick="goBuild()"><span class="tile-ic">🧩</span><span class="tile-t">Construir frases</span></button>
-      <button class="tile" style="background:linear-gradient(135deg,#B98498,#996B7E)" onclick="goNumHora()"><span class="tile-ic">🔢</span><span class="tile-t">Números y hora</span></button>
-      <button class="tile" style="background:linear-gradient(135deg,#9483B0,#776393)" onclick="goDialogs()"><span class="tile-ic">💬</span><span class="tile-t">Situaciones reales</span></button>
-      <button class="tile" style="background:linear-gradient(135deg,#BC8079,#9C615A)" onclick="goDictado()"><span class="tile-ic">🎧</span><span class="tile-t">Dictado</span></button>
+    <div class="indexGroup">
+      <div class="indexLabel"><span class="num">II</span><span class="word">Practicar</span></div>
+      <div class="indexList">
+        <button class="indexRow" onclick="goPractice()"><span class="indexIc">🎯</span><span class="indexTxt"><span class="indexT">Practicar</span><span class="indexD">Tarjetas, test y escritura</span></span><span class="indexGo">→</span></button>
+        <button class="indexRow" onclick="goVerbs()"><span class="indexIc">🔀</span><span class="indexTxt"><span class="indexT">Verbos</span><span class="indexD">Pasado, presente y frases reales</span></span><span class="indexGo">→</span></button>
+        <button class="indexRow" onclick="goBuild()"><span class="indexIc">🧩</span><span class="indexTxt"><span class="indexT">Construir frases</span><span class="indexD">Ordena las palabras</span></span><span class="indexGo">→</span></button>
+        <button class="indexRow" onclick="goNumHora()"><span class="indexIc">🔢</span><span class="indexTxt"><span class="indexT">Números y la hora</span><span class="indexD">Practica cifras y horas</span></span><span class="indexGo">→</span></button>
+        <button class="indexRow" onclick="goDialogs()"><span class="indexIc">💬</span><span class="indexTxt"><span class="indexT">Situaciones reales</span><span class="indexD">Diálogos del día a día</span></span><span class="indexGo">→</span></button>
+        <button class="indexRow" onclick="goDictado()"><span class="indexIc">🎧</span><span class="indexTxt"><span class="indexT">Dictado</span><span class="indexD">Escucha y escribe</span></span><span class="indexGo">→</span></button>
+      </div>
     </div>
-    <div class="sectionLabel">🔎 Explorar</div>
-    <div class="tilegrid">
-      <button class="tile" style="background:linear-gradient(135deg,#7C9BAE,#5C7C8E)" onclick="goExplore()"><span class="tile-ic">📖</span><span class="tile-t">Explorar</span></button>
-      <button class="tile" style="background:linear-gradient(135deg,#AD7468,#8C5950)" onclick="goLbKw()"><span class="tile-ic">🔀</span><span class="tile-t">Líbano vs Kuwait</span></button>
-      <button class="tile" style="background:linear-gradient(135deg,#8678AC,#6A5A87)" onclick="goStories()"><span class="tile-ic">📜</span><span class="tile-t">Historias cortas</span></button>
+    <div class="indexGroup">
+      <div class="indexLabel"><span class="num">III</span><span class="word">Explorar</span></div>
+      <div class="indexList">
+        <button class="indexRow" onclick="goExplore()"><span class="indexIc">📖</span><span class="indexTxt"><span class="indexT">Explorar</span><span class="indexD">Todo el vocabulario</span></span><span class="indexGo">→</span></button>
+        <button class="indexRow" onclick="goLbKw()"><span class="indexIc">🔀</span><span class="indexTxt"><span class="indexT">Líbano vs Kuwait</span><span class="indexD">Compara los dos dialectos</span></span><span class="indexGo">→</span></button>
+        <button class="indexRow" onclick="goStories()"><span class="indexIc">📜</span><span class="indexTxt"><span class="indexT">Historias cortas</span><span class="indexD">Lee en árabe, traduce si te atascas</span></span><span class="indexGo">→</span></button>
+      </div>
     </div>
     <!-- progreso plegable, discreto al final -->
     <button class="progtoggle" id="progToggle" onclick="toggleProg()">Ver mi progreso <span id="progChev">▾</span></button>
