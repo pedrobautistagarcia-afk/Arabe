@@ -36,7 +36,7 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--sand);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
-  body{background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2756%27%20height%3D%2756%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%233F6F6D%27%20stroke-opacity%3D%270.05%27%20stroke-width%3D%271.1%27%3E%3Cpath%20d%3D%27M28%200L56%2028L28%2056L0%2028Z%27/%3E%3Cpath%20d%3D%27M28%2012L44%2028L28%2044L12%2028Z%27/%3E%3C/g%3E%3C/svg%3E"),radial-gradient(circle at 100% 100%,rgba(176,115,85,.06),transparent 45%);background-attachment:fixed}
+  body{background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2756%27%20height%3D%2756%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%233F6F6D%27%20stroke-opacity%3D%270.05%27%20stroke-width%3D%271.1%27%3E%3Cpath%20d%3D%27M28%200L56%2028L28%2056L0%2028Z%27/%3E%3Cpath%20d%3D%27M28%2012L44%2028L28%2044L12%2028Z%27/%3E%3C/g%3E%3C/svg%3E"),radial-gradient(circle at 100% 100%,rgba(176,115,85,.06),transparent 45%)}
   .ar{font-family:'Noto Naskh Arabic',serif;direction:rtl}
   .wrap{max-width:680px;margin:0 auto;padding:0 16px 90px}
   header{text-align:center;padding:26px 16px 30px;margin:0 -16px 20px;position:relative;overflow:hidden;
@@ -1072,7 +1072,16 @@ function linkDevice(){
   if(!inp)return;
   const code=inp.value.trim();
   if(!code){return}
-  localStorage.setItem(SYNCCODEKEY,code);
+  try{
+    localStorage.setItem(SYNCCODEKEY,code);
+    if(localStorage.getItem(SYNCCODEKEY)!==code){
+      alert('Tu navegador está bloqueando el guardado (¿modo privado/incógnito, o memoria llena?). El código no se va a quedar guardado al reiniciar.');
+      return;
+    }
+  }catch(e){
+    alert('No se pudo guardar el código en este navegador (¿modo privado/incógnito?). Prueba en una ventana normal, no de incógnito.');
+    return;
+  }
   syncCode=code;
   syncStatus='connecting';
   renderProgDetail(); // refresco inmediato para que se vea el cambio (antes se quedaba como si no hiciera nada)
@@ -1424,9 +1433,11 @@ function renderBadges(){
   return html;
 }
 function renderSyncPanel(){
+  const storedCode=(()=>{try{return localStorage.getItem(SYNCCODEKEY)}catch(e){return null}})();
+  if(storedCode&&storedCode!==syncCode)syncCode=storedCode; // por si la variable en memoria se quedó desincronizada del storage real
   let h='<div class="progpanel"><h3>Sincronizar entre dispositivos <span id="syncBadge" class="syncBadge '+syncStatus+'"></span></h3>';
-  if(syncCode){
-    h+='<div style="font-size:13px;color:#5A6B73;margin-bottom:10px">Vinculado con el código: <b>'+syncCode+'</b></div>';
+  if(storedCode){
+    h+='<div style="font-size:13px;color:#5A6B73;margin-bottom:10px">Vinculado con el código: <b>'+storedCode+'</b></div>';
     const lastSync=Number(localStorage.getItem(LASTLOCALKEY)||0);
     h+='<div style="font-size:11.5px;color:#9DB0B8;margin-bottom:10px">'+(lastSync?'Última sincronización: '+new Date(lastSync).toLocaleString():'Aún no se ha sincronizado en este dispositivo')+'</div>';
     h+='<button class="lvlbtn" onclick="syncMerge(true)">🔄 Sincronizar ahora</button>';
@@ -1473,6 +1484,7 @@ function toggleProg(){
   const d=document.getElementById('progDetail');const t=document.getElementById('progToggle');
   const open=d.style.display!=='none';
   d.style.display=open?'none':'block';
+  if(!open){void d.offsetHeight;} // fuerza un repintado en móviles donde a veces no se pinta a la primera
   t.classList.toggle('open',!open);
   t.firstChild.textContent=open?'Ver mi progreso ':'Ocultar progreso ';
 }
