@@ -214,6 +214,18 @@
   .lc-go{flex-shrink:0;font-size:20px;color:rgba(255,255,255,.7)}
   /* ACTION LIST (filas compactas) */
   .actionlist{display:flex;flex-direction:column;gap:8px}
+  .sectionLabel{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9DB0B8;margin:18px 4px 8px}
+  .tilegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;aspect-ratio:1/1;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:8px 6px;cursor:pointer;font-family:inherit;color:var(--ink);transition:.16s;text-align:center}
+  .tile:hover{border-color:var(--clay);transform:translateY(-2px);box-shadow:0 4px 14px rgba(200,100,60,.10)}
+  .tile-ic{flex-shrink:0;width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .tile-t{font-weight:700;font-size:11.5px;line-height:1.15}
+  .todoCard{background:var(--paper);border:1px solid var(--line);border-radius:15px;padding:13px 15px;margin-top:14px}
+  .todoCard h4{margin:0 0 8px;font-size:12px;font-weight:700;color:#5A6B73;text-transform:uppercase;letter-spacing:.04em}
+  .todoRow{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line-soft,#EEF2F3)}
+  .todoRow:last-child{border-bottom:none}
+  .todoRow .tr-txt{font-size:13.5px}
+  .todoRow .tr-go{font-size:12px;font-weight:700;color:var(--teal);background:none;border:none;cursor:pointer;font-family:inherit}
   .rowcard{display:flex;align-items:center;gap:14px;width:100%;background:var(--paper);border:1px solid var(--line);border-radius:15px;padding:13px 15px;cursor:pointer;font-family:inherit;color:var(--ink);transition:.16s;text-align:left}
   .rowcard:hover{border-color:var(--clay);transform:translateX(3px);box-shadow:0 3px 14px rgba(200,100,60,.10)}
   .rc-ic{flex-shrink:0;width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:21px}
@@ -568,19 +580,29 @@
     <div id="primaryAction"></div>
     <!-- resumen semanal -->
     <div id="weekSummary"></div>
-    <!-- acciones principales, limpias -->
-    <div class="actionlist" style="margin-top:18px">
-      <button class="rowcard" onclick="goLevels()"><span class="rc-ic" style="background:#E0F2F1;color:#0E9594">🗺️</span><span class="rc-txt"><span class="rc-t">Niveles</span><span class="rc-d">Tu ruta paso a paso</span></span><span class="rc-go">→</span></button>
-      <button class="rowcard" onclick="goPractice()"><span class="rc-ic" style="background:#E8EFF6;color:#3B82C4">🎯</span><span class="rc-txt"><span class="rc-t">Practicar</span><span class="rc-d">Tarjetas, test y escritura</span></span><span class="rc-go">→</span></button>
-      <button class="rowcard" onclick="goVerbs()"><span class="rc-ic" style="background:#FAF0DC;color:#C8902F">🔀</span><span class="rc-txt"><span class="rc-t">Verbos</span><span class="rc-d">Pasado, presente y frases reales</span></span><span class="rc-go">→</span></button>
-      <button class="rowcard" onclick="goBuild()"><span class="rc-ic" style="background:#E6F3EC;color:#16A085">🧩</span><span class="rc-txt"><span class="rc-t">Construir frases</span><span class="rc-d">Ordena las palabras</span></span><span class="rc-go">→</span></button>
-      <button class="rowcard" onclick="goNumHora()"><span class="rc-ic" style="background:#FCE8EC;color:#D96B8E">🔢</span><span class="rc-txt"><span class="rc-t">Números y la hora</span><span class="rc-d">Practica cifras y horas</span></span><span class="rc-go">→</span></button>
-      <button class="rowcard" onclick="goDialogs()"><span class="rc-ic" style="background:#EDE9F6;color:#8B6FC9">💬</span><span class="rc-txt"><span class="rc-t">Situaciones reales</span><span class="rc-d">Diálogos del día a día</span></span><span class="rc-go">→</span></button>
-      <button class="rowcard" onclick="goDictado()"><span class="rc-ic" style="background:#FCE8EC;color:#D96B8E">🎧</span><span class="rc-txt"><span class="rc-t">Dictado</span><span class="rc-d">Escucha y escribe</span></span><span class="rc-go">→</span></button>
-      <button class="rowcard" onclick="goClases()"><span class="rc-ic" style="background:#FFF3E0;color:#C8902F">🎓</span><span class="rc-txt"><span class="rc-t">Mis clases</span><span class="rc-d">Repasa lo visto con tu profesor, por clase</span></span><span class="rc-go">→</span></button>
-      <button class="rowcard" onclick="goExplore()"><span class="rc-ic" style="background:#EAF0F4;color:#5A8DB8">📖</span><span class="rc-txt"><span class="rc-t">Explorar</span><span class="rc-d">Todo el vocabulario</span></span><span class="rc-go">→</span></button>
-      <button class="rowcard" onclick="goLbKw()"><span class="rc-ic" style="background:#FDEDED;color:#C0392B">🔀</span><span class="rc-txt"><span class="rc-t">Líbano vs Kuwait</span><span class="rc-d">Compara los dos dialectos</span></span><span class="rc-go">→</span></button>
-      <button class="rowcard" onclick="goStories()"><span class="rc-ic" style="background:#EFEAFB;color:#6C4FBE">📜</span><span class="rc-txt"><span class="rc-t">Historias cortas</span><span class="rc-d">Lee en árabe, traduce si te atascas</span></span><span class="rc-go">→</span></button>
+    <!-- qué toca repasar hoy (niveles + clases) -->
+    <div id="todoSummary"></div>
+    <!-- acciones principales, en malla de cuadraditos -->
+    <div class="sectionLabel">📚 Aprender</div>
+    <div class="tilegrid">
+      <button class="tile" onclick="goLevels()"><span class="tile-ic" style="background:#E0F2F1;color:#0E9594">🗺️</span><span class="tile-t">Niveles</span></button>
+      <button class="tile" onclick="goClases()"><span class="tile-ic" style="background:#FFF3E0;color:#C8902F">🎓</span><span class="tile-t">Mis clases</span></button>
+      <button class="tile" onclick="goSynonyms()"><span class="tile-ic" style="background:#FDEDED;color:#C0392B">⚖️</span><span class="tile-t">Formas dobles</span></button>
+    </div>
+    <div class="sectionLabel">🎯 Practicar</div>
+    <div class="tilegrid">
+      <button class="tile" onclick="goPractice()"><span class="tile-ic" style="background:#E8EFF6;color:#3B82C4">🎯</span><span class="tile-t">Practicar</span></button>
+      <button class="tile" onclick="goVerbs()"><span class="tile-ic" style="background:#FAF0DC;color:#C8902F">🔀</span><span class="tile-t">Verbos</span></button>
+      <button class="tile" onclick="goBuild()"><span class="tile-ic" style="background:#E6F3EC;color:#16A085">🧩</span><span class="tile-t">Construir frases</span></button>
+      <button class="tile" onclick="goNumHora()"><span class="tile-ic" style="background:#FCE8EC;color:#D96B8E">🔢</span><span class="tile-t">Números y hora</span></button>
+      <button class="tile" onclick="goDialogs()"><span class="tile-ic" style="background:#EDE9F6;color:#8B6FC9">💬</span><span class="tile-t">Situaciones reales</span></button>
+      <button class="tile" onclick="goDictado()"><span class="tile-ic" style="background:#FCE8EC;color:#D96B8E">🎧</span><span class="tile-t">Dictado</span></button>
+    </div>
+    <div class="sectionLabel">🔎 Explorar</div>
+    <div class="tilegrid">
+      <button class="tile" onclick="goExplore()"><span class="tile-ic" style="background:#EAF0F4;color:#5A8DB8">📖</span><span class="tile-t">Explorar</span></button>
+      <button class="tile" onclick="goLbKw()"><span class="tile-ic" style="background:#FDEDED;color:#C0392B">🔀</span><span class="tile-t">Líbano vs Kuwait</span></button>
+      <button class="tile" onclick="goStories()"><span class="tile-ic" style="background:#EFEAFB;color:#6C4FBE">📜</span><span class="tile-t">Historias cortas</span></button>
     </div>
     <!-- progreso plegable, discreto al final -->
     <button class="progtoggle" id="progToggle" onclick="toggleProg()">Ver mi progreso <span id="progChev">▾</span></button>
@@ -761,6 +783,12 @@
   <div id="numhora" style="display:none">
     <button class="backHome" onclick="goHome()">← Inicio</button>
     <div id="nhStage"></div>
+  </div>
+
+  <!-- SYNONYMS / FORMAS DOBLES -->
+  <div id="synonyms" style="display:none">
+    <button class="backHome" onclick="goHome()">← Inicio</button>
+    <div id="synonymsStage"></div>
   </div>
 
   <!-- CLASES -->
@@ -1168,7 +1196,7 @@ function renderStreak(){const s=loadStreak();const b=document.getElementById('st
 }
 
 /* ---------- NAV ---------- */
-function hideAll(){const w=document.querySelector('.wrap');if(w)w.classList.remove('wide');['home','explore','setup','dictSetup','conjSetup','dialogs','levels','levelStudy','lbkw','verbStudy','verbFlash','verbMatch','stories','storyRead','build','verbs','numhora','study','clases','claseDetail'].forEach(id=>document.getElementById(id).style.display='none')}
+function hideAll(){const w=document.querySelector('.wrap');if(w)w.classList.remove('wide');['home','explore','setup','dictSetup','conjSetup','dialogs','levels','levelStudy','lbkw','verbStudy','verbFlash','verbMatch','stories','storyRead','build','verbs','numhora','study','clases','claseDetail','synonyms'].forEach(id=>document.getElementById(id).style.display='none')}
 function goHome(){curLevel=null;hideAll();document.getElementById('home').style.display='block';speechSynthesis&&speechSynthesis.cancel();renderHome()}
 function goExplore(){hideAll();document.getElementById('explore').style.display='block';renderExplore()}
 function goPractice(){hideAll();document.getElementById('setup').style.display='block';globalStat();updateMeta()}
@@ -1235,6 +1263,7 @@ function renderHome(){
   // progreso (relleno pero oculto hasta que se despliega)
   renderProgDetail();
   renderWeekSummary();
+  renderTodoSummary();
 }
 
 let calMonth=null; // null = mes actual
@@ -1795,6 +1824,54 @@ function playWholeDialog(id){
   next();
 }
 
+
+/* ---------- FORMAS DOBLES (sinónimos kuwaitíes anotados con 'nota') ---------- */
+function allNotedWords(){
+  let out=[];
+  Object.values(LEVELS.levels).forEach(arr=>arr.forEach(w=>{if(w.nota)out.push(w)}));
+  return out;
+}
+function goSynonyms(){hideAll();document.getElementById('synonyms').style.display='block';renderSynonyms()}
+function renderSynonyms(){
+  const items=allNotedWords();
+  let h='<div style="text-align:center;margin-bottom:14px"><div style="font-family:\'Fraunces\',serif;font-size:24px;font-weight:600">⚖️ Formas dobles</div><div style="font-size:13px;color:#5A6B73;margin-top:4px">Palabras con más de una forma válida en kuwaití — para no confundirte</div></div>';
+  if(!items.length){h+='<div class="empty">Aún no hay formas dobles anotadas.</div>';document.getElementById('synonymsStage').innerHTML=h;return}
+  h+='<div class="studyTableWrap"><table class="studyTable"><thead><tr><th>Español</th><th>Árabe</th><th>Nota</th><th></th></tr></thead><tbody>';
+  items.forEach(w=>{
+    const arS=sayAr(w).replace(/'/g,"\\'");
+    h+='<tr class="wordRow"><td class="colEs">'+w.es+'</td><td class="colAr">'+(w.ar||'')+'<div style="font-size:10px;color:#9DB0B8">'+(w.tr||'')+'</div></td><td style="font-size:11.5px;color:#5A6B73;max-width:220px">'+w.nota+'</td><td class="colSpeak">'+(w.ar?'<button class="miniSpeak" onclick="speak(\''+arS+'\')">🔊</button>':'')+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  document.getElementById('synonymsStage').innerHTML=h;
+}
+
+/* ---------- RESUMEN: QUÉ TOCA REPASAR HOY (Niveles + Clases) ---------- */
+function renderTodoSummary(){
+  const el=document.getElementById('todoSummary');if(!el)return;
+  // nivel más bajo desbloqueado con pendientes
+  let lvlNum=null,lvlPending=0;
+  for(let L=1;L<=5;L++){
+    if(!levelUnlocked(L))break;
+    const words=(LEVELS.levels[String(L)]||[]);
+    const pend=words.filter(w=>!wordMastered(w)).length;
+    if(pend>0){lvlNum=L;lvlPending=pend;break}
+  }
+  // clases
+  let claseRows=[];
+  CLASES.list.forEach(n=>{
+    const words=getClaseWords(n);
+    const pend=words.filter(w=>!wordMastered(w)).length;
+    if(pend>0)claseRows.push({n,pend});
+  });
+  if(lvlNum===null&&claseRows.length===0){el.innerHTML='';return}
+  let h='<div class="todoCard"><h4>📋 Te toca repasar</h4>';
+  if(lvlNum!==null)h+='<div class="todoRow"><span class="tr-txt">'+lvlPending+' palabra'+(lvlPending!=1?'s':'')+' pendientes en Nivel '+lvlNum+'</span><button class="tr-go" onclick="openLevelStudy('+lvlNum+')">Repasar →</button></div>';
+  claseRows.forEach(r=>{
+    h+='<div class="todoRow"><span class="tr-txt">'+r.pend+' pendientes en Clase '+r.n+'</span><button class="tr-go" onclick="openClase('+r.n+')">Repasar →</button></div>';
+  });
+  h+='</div>';
+  el.innerHTML=h;
+}
 
 /* ---------- CLASES ---------- */
 function getClaseVerbs(n){return allVerbsList().filter(v=>v.clase===n);}
