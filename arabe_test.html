@@ -2985,6 +2985,12 @@ function showNumberRef(){
 recordSnapshot();
 initSync();
 goHome();
+// Por algún motivo (aún sin identificar del todo) parte del home no pinta bien en la
+// primerísima carga y solo se ve bien tras navegar a otra pantalla y volver. En vez de
+// perseguir la causa exacta, repetimos ese mismo "navegar y volver" automáticamente.
+requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  if(document.getElementById('home').style.display!=='none')renderHome();
+}));
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('sw.js').catch(()=>{});
