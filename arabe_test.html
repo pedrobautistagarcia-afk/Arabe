@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pedrolingo — Tu árabe</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0E9594">
+<meta name="theme-color" content="#3F6F6D">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,38 +14,48 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap');
   :root{
-    --sand:#F4F7F8;          /* fondo fresco gris-azulado muy claro */
+    --sand:#FBF1E2;          /* arena cálida del desierto */
     --paper:#FFFFFF;         /* tarjetas blancas limpias */
-    --ink:#16242B;           /* texto azul-petróleo oscuro, no negro puro */
+    --ink:#1A2B2C;           /* texto petróleo oscuro */
     --ink-soft:#5A6B73;      /* texto secundario */
-    --clay:#0E9594;          /* acento principal: teal fresco */
-    --clay-deep:#0B7A79;     /* teal oscuro hover */
-    --teal:#0E9594;          /* alias */
+    --clay:#3F6F6D;          /* acento principal: teal profundo del Golfo */
+    --clay-deep:#2D4F4E;     /* teal aún más oscuro, header */
+    --teal:#3F6F6D;          /* alias */
+    --terra:#C8602F;         /* terracota cálido, segundo acento */
     --accent2:#3B82C4;       /* azul para variedad */
-    --gold:#E0A53B;
+    --gold:#C9A368;
     --ok:#16A085;            /* verde-teal dominadas */
     --mid:#E0A53B;           /* ámbar a mejorar */
     --no:#E0685F;            /* coral suave por aprender */
-    --line:#E3EBEE;          /* líneas suaves frías */
-    --line-soft:#EEF3F5;
+    --line:#EAE0CC;          /* líneas cálidas suaves */
+    --line-soft:#F1E9D8;
+    --shadow-sm:0 1px 2px rgba(26,35,30,.05), 0 1px 1px rgba(26,35,30,.04);
+    --shadow-md:0 4px 16px rgba(26,35,30,.09), 0 1px 3px rgba(26,35,30,.06);
+    --shadow-lg:0 10px 30px rgba(26,35,30,.13), 0 2px 8px rgba(26,35,30,.07);
+    --shadow-glow:0 6px 20px rgba(63,111,109,.22);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--sand);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
-  body{background-image:radial-gradient(circle at 50% -5%,rgba(14,149,148,.06),transparent 55%)}
+  body{background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2756%27%20height%3D%2756%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%233F6F6D%27%20stroke-opacity%3D%270.05%27%20stroke-width%3D%271.1%27%3E%3Cpath%20d%3D%27M28%200L56%2028L28%2056L0%2028Z%27/%3E%3Cpath%20d%3D%27M28%2012L44%2028L28%2044L12%2028Z%27/%3E%3C/g%3E%3C/svg%3E"),radial-gradient(circle at 100% 100%,rgba(176,115,85,.06),transparent 45%);background-attachment:fixed}
   .ar{font-family:'Noto Naskh Arabic',serif;direction:rtl}
-  .wrap{max-width:680px;margin:0 auto;padding:18px 16px 90px}
-  header{text-align:center;padding:10px 0 4px;position:relative}
-  .logo{font-family:'Fraunces',serif;font-weight:900;font-size:34px;letter-spacing:-1.2px;line-height:1}
-  .logo .dot{color:var(--clay)}
-  .tag{font-size:13px;color:#3E5159;margin-top:4px;letter-spacing:.3px}
-  .streakBadge{position:absolute;top:6px;right:0;background:var(--paper);border:1px solid var(--line);border-radius:99px;
-    padding:8px 14px;font-size:14px;font-weight:800;display:flex;align-items:center;gap:6px;cursor:default;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .wrap{max-width:680px;margin:0 auto;padding:0 16px 90px}
+  header{text-align:center;padding:26px 16px 30px;margin:0 -16px 20px;position:relative;overflow:hidden;
+    background:linear-gradient(135deg,var(--clay) 0%,var(--clay-deep) 100%);
+    border-radius:0 0 30px 30px;box-shadow:var(--shadow-lg)}
+  header::before{content:'';position:absolute;inset:0;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2756%27%20height%3D%2756%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%23ffffff%27%20stroke-opacity%3D%270.16%27%20stroke-width%3D%271.1%27%3E%3Cpath%20d%3D%27M28%200L56%2028L28%2056L0%2028Z%27/%3E%3Cpath%20d%3D%27M28%2012L44%2028L28%2044L12%2028Z%27/%3E%3C/g%3E%3C/svg%3E");
+    background-size:56px 56px}
+  .logo{font-family:'Fraunces',serif;font-weight:900;font-size:36px;letter-spacing:-1.2px;line-height:1;color:#fff;position:relative;z-index:1}
+  .logo .dot{color:var(--gold)}
+  .tag{font-size:13px;color:rgba(255,255,255,.82);margin-top:6px;letter-spacing:.3px;position:relative;z-index:1}
+  .streakBadge{position:absolute;top:22px;right:16px;background:rgba(255,255,255,.16);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.3);border-radius:99px;
+    padding:8px 14px;font-size:14px;font-weight:800;display:flex;align-items:center;gap:6px;cursor:default;color:#fff;z-index:1;transition:.2s}
   .streakBadge .fire{font-size:15px;filter:grayscale(0)}
-  .streakBadge.cold{opacity:.55}.streakBadge.cold .fire{filter:grayscale(1)}
+  .streakBadge.cold{opacity:.6}.streakBadge.cold .fire{filter:grayscale(1)}
 
   /* HOME */
   .hero{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:22px;margin-top:16px;position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.03)}
-  .hero.active{background:linear-gradient(135deg,#0E9594,#0B7A79);border:none;color:#fff}
+  .hero.active{background:linear-gradient(135deg,#3F6F6D,#2D4F4E);border:none;color:#fff}
   .hero-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
   .hero-eyebrow{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:2px;opacity:.7}
   .hero .hl{font-family:'Fraunces',serif;font-weight:600;font-size:23px;margin-bottom:5px;line-height:1.1}
@@ -79,7 +89,7 @@
   .sb .n.ok{color:var(--ok)} .sb .n.mid{color:var(--mid)} .sb .n.no{color:var(--no)}
 
   /* generic */
-  .card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:20px;margin-top:16px}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:20px;margin-top:16px;box-shadow:var(--shadow-sm)}
   .label{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:#5A6B73;font-weight:600;margin-bottom:10px}
   .chips{display:flex;flex-wrap:wrap;gap:8px}
   .chip{border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;transition:.15s;color:var(--ink);font-family:inherit}
@@ -90,8 +100,8 @@
   .mode:hover{border-color:var(--clay)} .mode.on{border-color:var(--clay);background:#E0F2F1}
   .mode .ic{font-size:20px;margin-bottom:3px} .mode .nm{font-size:11.5px;font-weight:600}
   .dirs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-  .start{width:100%;margin-top:18px;background:var(--clay);color:#fff;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s;letter-spacing:.3px}
-  .start:hover{background:var(--clay-deep)} .start:disabled{background:#C9C1B2;cursor:not-allowed}
+  .start{width:100%;margin-top:18px;background:linear-gradient(135deg,var(--clay),var(--clay-deep));color:#fff;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:.18s cubic-bezier(.2,.7,.3,1);letter-spacing:.3px;box-shadow:var(--shadow-glow)}
+  .start:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(63,111,109,.24)} .start:active{transform:translateY(0) scale(.98)} .start:disabled{background:#C9C1B2;cursor:not-allowed;box-shadow:none}
   .selrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
   .selbtns{display:flex;gap:6px}
   .mini{font-size:11px;color:var(--teal);background:none;border:none;cursor:pointer;font-weight:600;font-family:inherit;text-decoration:underline}
@@ -205,8 +215,8 @@
 
 
   /* LEVEL CARD destacada */
-  .levelcard{display:flex;align-items:center;gap:14px;width:100%;background:linear-gradient(135deg,#0E9594,#0B7A79);color:#fff;border:none;border-radius:16px;padding:15px;cursor:pointer;font-family:inherit;margin-bottom:14px;transition:.16s;box-shadow:0 4px 16px rgba(14,149,148,.25)}
-  .levelcard:hover{transform:translateY(-2px);box-shadow:0 7px 22px rgba(14,149,148,.34)}
+  .levelcard{display:flex;align-items:center;gap:14px;width:100%;background:linear-gradient(135deg,#3F6F6D,#2D4F4E);color:#fff;border:none;border-radius:16px;padding:15px;cursor:pointer;font-family:inherit;margin-bottom:14px;transition:.16s;box-shadow:0 4px 16px rgba(63,111,109,.25)}
+  .levelcard:hover{transform:translateY(-2px);box-shadow:0 7px 22px rgba(63,111,109,.34)}
   .lc-ic{flex-shrink:0;width:46px;height:46px;border-radius:13px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:24px}
   .lc-txt{flex:1;display:flex;flex-direction:column;gap:2px;text-align:left}
   .lc-t{font-family:'Fraunces',serif;font-weight:600;font-size:18px;line-height:1}
@@ -214,18 +224,20 @@
   .lc-go{flex-shrink:0;font-size:20px;color:rgba(255,255,255,.7)}
   /* ACTION LIST (filas compactas) */
   .actionlist{display:flex;flex-direction:column;gap:8px}
-  .sectionLabel{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#9DB0B8;margin:18px 4px 8px}
+  .sectionLabel{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9DB0B8;margin:20px 4px 9px}
   .tilegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  .tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;aspect-ratio:1/1;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:8px 6px;cursor:pointer;font-family:inherit;color:var(--ink);transition:.16s;text-align:center}
-  .tile:hover{border-color:var(--clay);transform:translateY(-2px);box-shadow:0 4px 14px rgba(200,100,60,.10)}
-  .tile-ic{flex-shrink:0;width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
-  .tile-t{font-weight:700;font-size:11.5px;line-height:1.15}
-  .todoCard{background:var(--paper);border:1px solid var(--line);border-radius:15px;padding:13px 15px;margin-top:14px}
-  .todoCard h4{margin:0 0 8px;font-size:12px;font-weight:700;color:#5A6B73;text-transform:uppercase;letter-spacing:.04em}
-  .todoRow{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line-soft,#EEF2F3)}
+  .tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;aspect-ratio:1/1;border:none;border-radius:18px;padding:8px 6px;cursor:pointer;font-family:inherit;color:#fff;transition:.22s cubic-bezier(.2,.7,.3,1);text-align:center;box-shadow:var(--shadow-md)}
+  .tile:hover{transform:translateY(-3px) scale(1.02);box-shadow:var(--shadow-lg)}
+  .tile:active{transform:translateY(-1px) scale(.96);transition:.08s}
+  .tile-ic{flex-shrink:0;width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;background:rgba(255,255,255,.24)}
+  .tile-t{font-weight:700;font-size:11.5px;line-height:1.15;color:#fff}
+  .todoCard{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-top:14px;box-shadow:var(--shadow-sm)}
+  .todoCard h4{margin:0 0 8px;font-size:12px;font-weight:700;color:#5A6B73;text-transform:uppercase;letter-spacing:.06em}
+  .todoRow{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line-soft,#EEF2F3)}
   .todoRow:last-child{border-bottom:none}
   .todoRow .tr-txt{font-size:13.5px}
-  .todoRow .tr-go{font-size:12px;font-weight:700;color:var(--teal);background:none;border:none;cursor:pointer;font-family:inherit}
+  .todoRow .tr-go{font-size:12px;font-weight:700;color:var(--teal);background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 0;transition:.15s}
+  .todoRow .tr-go:hover{color:var(--clay-deep);transform:translateX(2px)}
   .rowcard{display:flex;align-items:center;gap:14px;width:100%;background:var(--paper);border:1px solid var(--line);border-radius:15px;padding:13px 15px;cursor:pointer;font-family:inherit;color:var(--ink);transition:.16s;text-align:left}
   .rowcard:hover{border-color:var(--clay);transform:translateX(3px);box-shadow:0 3px 14px rgba(200,100,60,.10)}
   .rc-ic{flex-shrink:0;width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:21px}
@@ -239,7 +251,7 @@
 
   /* EDITOR */
   .editdot{font-size:8px;font-weight:800;background:#FBF0DC;color:#C8902F;padding:1px 5px;border-radius:99px;margin-left:6px;vertical-align:middle;text-transform:uppercase;letter-spacing:.5px}
-  .userdot{font-size:8px;font-weight:800;background:#E0F2F1;color:#0B7A79;padding:1px 5px;border-radius:99px;margin-left:6px;vertical-align:middle;text-transform:uppercase;letter-spacing:.5px}
+  .userdot{font-size:8px;font-weight:800;background:#E0F2F1;color:#2D4F4E;padding:1px 5px;border-radius:99px;margin-left:6px;vertical-align:middle;text-transform:uppercase;letter-spacing:.5px}
   .iconbtn.edit{opacity:.5}.iconbtn.edit:hover{opacity:1}
   .modal-bg{position:fixed;inset:0;background:rgba(20,40,50,.45);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
   .modal{background:var(--paper);border-radius:22px;padding:24px;max-width:420px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
@@ -290,7 +302,7 @@
   /* acción protagonista */
   .primary{margin-top:18px;border-radius:22px;padding:24px;position:relative;overflow:hidden;cursor:pointer;transition:.18s;border:none;width:100%;text-align:left;font-family:inherit}
   .primary:hover{transform:translateY(-2px)}
-  .primary.review{background:linear-gradient(135deg,#0E9594,#0B6E6D);color:#fff;box-shadow:0 8px 28px rgba(14,149,148,.28)}
+  .primary.review{background:linear-gradient(135deg,#3F6F6D,#3F6F6D);color:#fff;box-shadow:0 8px 28px rgba(63,111,109,.28)}
   .primary.start{background:#fff;border:1px solid var(--line);box-shadow:0 4px 18px rgba(20,40,50,.05);color:var(--ink)}
   .primary.start .p-title{color:var(--ink)}
   .primary.start .p-sub{color:var(--ink-soft)}
@@ -298,7 +310,7 @@
   .primary .p-title{font-family:'Fraunces',serif;font-size:22px;font-weight:600;line-height:1.15;margin-bottom:4px}
   .primary .p-sub{font-size:13px;opacity:.85;line-height:1.5;display:block;max-width:88%}
   .primary .p-cta{display:inline-flex;align-items:center;gap:8px;margin-top:18px;font-weight:800;font-size:15px}
-  .primary.review .p-cta{background:#fff;color:#0B7A79;padding:12px 20px;border-radius:13px;box-shadow:0 3px 10px rgba(0,0,0,.12)}
+  .primary.review .p-cta{background:#fff;color:#2D4F4E;padding:12px 20px;border-radius:13px;box-shadow:0 3px 10px rgba(0,0,0,.12)}
   .primary.start .p-cta{color:var(--clay)}
   .primary .p-num{position:absolute;right:20px;top:50%;transform:translateY(-50%);font-family:'Space Grotesk',sans-serif;font-size:54px;font-weight:700;opacity:.22;letter-spacing:-2px}
   /* toggle progreso */
@@ -323,10 +335,10 @@
   .lvlmeta{display:flex;justify-content:space-between;font-size:12px;color:#3E5159;margin-top:6px}
   .lvllock{position:absolute;top:18px;right:18px;font-size:22px}
   .lvlbadge{position:absolute;top:16px;right:16px;background:var(--ok);color:#fff;font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px}
-  .lvlbtn{margin-top:12px;width:100%;background:var(--clay);color:#fff;border:none;border-radius:12px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
-  .lvlbtn:hover{background:var(--clay-deep)}
-  .lvlbtn2{margin-top:8px;width:100%;background:var(--paper);color:var(--clay);border:1.5px solid var(--clay);border-radius:12px;padding:11px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
-  .lvlbtn2:hover{background:#E8F6F2}
+  .lvlbtn{margin-top:12px;width:100%;background:linear-gradient(135deg,var(--clay),var(--clay-deep));color:#fff;border:none;border-radius:13px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;transition:.18s;box-shadow:var(--shadow-glow)}
+  .lvlbtn:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(63,111,109,.22)}
+  .lvlbtn2{margin-top:8px;width:100%;background:var(--paper);color:var(--clay);border:1.5px solid var(--clay);border-radius:12px;padding:11px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;transition:.18s}
+  .lvlbtn2:hover{background:#E8F6F2;transform:translateY(-1px)}
   .testbtn{margin-top:8px;width:100%;background:#C8902F;color:#fff;border:none;border-radius:12px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
   .testbtn:hover{filter:brightness(.95)}
   .wrap.wide{max-width:1180px}
@@ -370,14 +382,14 @@
   .syncBadge.off,.syncBadge.nocode{background:#EEF2F3;color:#8A9AA2}
   .syncBadge.connecting{background:#FFF6E8;color:#7A5A1F}
   .syncBadge.synced{background:#E8F6F2;color:var(--ok)}
-  .syncBadge.error{background:#FDEDED;color:#C0392B}
+  .syncBadge.error{background:linear-gradient(145deg,#FDEDED,#FAD7D7);color:#C0392B}
   .badgeGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;margin-top:10px}
   .badge{background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:12px 8px;text-align:center;font-size:11px;color:#5A6B73}
   .badge.got{background:#FFF6E8;border-color:#E8C988;color:#7A5A1F}
   .badge .bIcon{font-size:24px;display:block;margin-bottom:4px}
   .badge.locked .bIcon{filter:grayscale(1) opacity(.4)}
   .badge .bTitle{font-weight:700;display:block;margin-top:2px}
-  .studyTableWrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;margin-top:10px}
+  .studyTableWrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;margin-top:10px;box-shadow:var(--shadow-sm)}
   table.studyTable{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--paper)}
   table.studyTable thead th{position:sticky;top:0;background:var(--sand);font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#5A6B73;text-align:left;padding:5px 8px;border-bottom:2px solid var(--line)}
   table.studyTable td{padding:3px 8px;border-bottom:1px solid var(--line-soft,#EEF2F3);vertical-align:middle;line-height:1.25}
@@ -457,13 +469,13 @@
   .vd-tar{font-family:'Noto Naskh Arabic',serif;font-size:26px;direction:rtl;color:var(--ink)}
   .vd-ttr{font-size:12px;color:var(--clay);font-weight:600;margin-top:3px}
   .vd-frase{background:linear-gradient(135deg,#E0F2F1,#EAF0F4);border-radius:16px;padding:18px;text-align:center;margin-top:10px;position:relative}
-  .vd-frase-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#0E9594;margin-bottom:8px}
+  .vd-frase-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#3F6F6D;margin-bottom:8px}
   .vd-frase-ar{font-family:'Noto Naskh Arabic',serif;font-size:23px;direction:rtl;line-height:1.5}
   .vd-frase-tr{font-size:14px;font-weight:600;color:var(--clay);margin-top:5px}
   .vd-frase-es{font-size:13px;color:var(--ink-soft);margin-top:3px}
   .vd-frase-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px}
   .vd-frase-dot{width:7px;height:7px;border-radius:50%;background:#C9D6DB;transition:.2s}
-  .vd-frase-dot.on{background:#0E9594;width:20px;border-radius:99px}
+  .vd-frase-dot.on{background:#3F6F6D;width:20px;border-radius:99px}
   .vd-newfrase{display:block;margin:14px auto 0;background:var(--clay);color:#fff;border:none;border-radius:12px;padding:11px 20px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
   .vd-speak{display:inline-flex;align-items:center;gap:6px;background:var(--teal);color:#fff;border:none;border-radius:11px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;margin-top:4px}
 
@@ -482,20 +494,20 @@
   .vt-ar{font-family:'Noto Naskh Arabic',serif;font-size:22px;direction:rtl;text-align:right;color:var(--ink);width:33%}
   .vt-tr{font-size:14px;font-weight:600;color:var(--clay);width:33%}
   .vt-rev{font-size:9px;font-weight:800;background:#FBF0DC;color:#C8902F;padding:1px 6px;border-radius:99px;vertical-align:middle;margin-left:4px}
-  .vt-conjlbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:#0E9594;margin:10px 2px 6px}
+  .vt-conjlbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:#3F6F6D;margin:10px 2px 6px}
   .vt-note{font-size:11px;color:#9DB0B8;font-style:italic;margin:6px 2px 0;text-align:center}
   .vt-past td{background:#FBF7EF}
   #verbs .vtable+.vtable{margin-top:0}
-  .vpractice-btn{display:block;width:100%;background:linear-gradient(135deg,#0E9594,#0B7A79);color:#fff;border:none;border-radius:15px;padding:15px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;margin-bottom:18px;box-shadow:0 4px 16px rgba(14,149,148,.25);transition:.15s}
-  .vpractice-btn:hover{transform:translateY(-2px);box-shadow:0 7px 22px rgba(14,149,148,.32)}
+  .vpractice-btn{display:block;width:100%;background:linear-gradient(135deg,#3F6F6D,#2D4F4E);color:#fff;border:none;border-radius:15px;padding:15px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;margin-bottom:18px;box-shadow:0 4px 16px rgba(63,111,109,.25);transition:.15s}
+  .vpractice-btn:hover{transform:translateY(-2px);box-shadow:0 7px 22px rgba(63,111,109,.32)}
   /* verb practice card */
   .vp-card{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:24px 20px;text-align:center;box-shadow:0 2px 12px rgba(20,40,50,.05)}
-  .vp-type{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#0E9594;margin-bottom:14px}
+  .vp-type{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#3F6F6D;margin-bottom:14px}
   .vp-prompt{font-size:15px;color:var(--ink-soft);margin-bottom:8px}
   .vp-big{font-family:'Noto Naskh Arabic',serif;font-size:38px;direction:rtl;color:var(--ink);margin:6px 0}
   .vp-bigtr{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:var(--clay);margin:6px 0;letter-spacing:-.5px}
   .vp-sub{font-size:14px;color:var(--ink-soft)}
-  .vp-pron{display:inline-block;background:#E0F2F1;color:#0B7A79;font-weight:800;padding:6px 16px;border-radius:99px;font-size:18px;margin:10px 0}
+  .vp-pron{display:inline-block;background:#E0F2F1;color:#2D4F4E;font-weight:800;padding:6px 16px;border-radius:99px;font-size:18px;margin:10px 0}
   .vp-opts{display:flex;flex-direction:column;gap:10px;margin-top:18px}
   .vp-opt{background:var(--paper);border:1.5px solid var(--line);border-radius:13px;padding:14px;font-size:16px;cursor:pointer;font-family:inherit;color:var(--ink);transition:.12s;font-weight:600}
   .vp-opt:hover{border-color:var(--clay)}
@@ -531,7 +543,7 @@
 
   /* DICTADO */
   .dictbig{width:90px;height:90px;border-radius:50%;border:none;background:var(--teal);color:#fff;font-size:38px;cursor:pointer;margin:10px auto;display:flex;align-items:center;justify-content:center;transition:.15s}
-  .dictbig:hover{background:#0B7A79} .dictbig:active{transform:scale(.95)}
+  .dictbig:hover{background:#2D4F4E} .dictbig:active{transform:scale(.95)}
   .dicthint{text-align:center;font-size:13px;color:#7E9098;margin-bottom:6px}
 
   /* CONJUG */
@@ -585,24 +597,24 @@
     <!-- acciones principales, en malla de cuadraditos -->
     <div class="sectionLabel">📚 Aprender</div>
     <div class="tilegrid">
-      <button class="tile" onclick="goLevels()"><span class="tile-ic" style="background:#E0F2F1;color:#0E9594">🗺️</span><span class="tile-t">Niveles</span></button>
-      <button class="tile" onclick="goClases()"><span class="tile-ic" style="background:#FFF3E0;color:#C8902F">🎓</span><span class="tile-t">Mis clases</span></button>
-      <button class="tile" onclick="goSynonyms()"><span class="tile-ic" style="background:#FDEDED;color:#C0392B">⚖️</span><span class="tile-t">Formas dobles</span></button>
+      <button class="tile" style="background:linear-gradient(135deg,#3F6F6D,#2D4F4E)" onclick="goLevels()"><span class="tile-ic">🗺️</span><span class="tile-t">Niveles</span></button>
+      <button class="tile" style="background:linear-gradient(135deg,#C9A368,#A37D45)" onclick="goClases()"><span class="tile-ic">🎓</span><span class="tile-t">Mis clases</span></button>
+      <button class="tile" style="background:linear-gradient(135deg,#B07355,#8C5A41)" onclick="goSynonyms()"><span class="tile-ic">⚖️</span><span class="tile-t">Formas dobles</span></button>
     </div>
     <div class="sectionLabel">🎯 Practicar</div>
     <div class="tilegrid">
-      <button class="tile" onclick="goPractice()"><span class="tile-ic" style="background:#E8EFF6;color:#3B82C4">🎯</span><span class="tile-t">Practicar</span></button>
-      <button class="tile" onclick="goVerbs()"><span class="tile-ic" style="background:#FAF0DC;color:#C8902F">🔀</span><span class="tile-t">Verbos</span></button>
-      <button class="tile" onclick="goBuild()"><span class="tile-ic" style="background:#E6F3EC;color:#16A085">🧩</span><span class="tile-t">Construir frases</span></button>
-      <button class="tile" onclick="goNumHora()"><span class="tile-ic" style="background:#FCE8EC;color:#D96B8E">🔢</span><span class="tile-t">Números y hora</span></button>
-      <button class="tile" onclick="goDialogs()"><span class="tile-ic" style="background:#EDE9F6;color:#8B6FC9">💬</span><span class="tile-t">Situaciones reales</span></button>
-      <button class="tile" onclick="goDictado()"><span class="tile-ic" style="background:#FCE8EC;color:#D96B8E">🎧</span><span class="tile-t">Dictado</span></button>
+      <button class="tile" style="background:linear-gradient(135deg,#6E93B5,#4F708F)" onclick="goPractice()"><span class="tile-ic">🎯</span><span class="tile-t">Practicar</span></button>
+      <button class="tile" style="background:linear-gradient(135deg,#C9A368,#A37D45)" onclick="goVerbs()"><span class="tile-ic">🔀</span><span class="tile-t">Verbos</span></button>
+      <button class="tile" style="background:linear-gradient(135deg,#6FA08E,#517566)" onclick="goBuild()"><span class="tile-ic">🧩</span><span class="tile-t">Construir frases</span></button>
+      <button class="tile" style="background:linear-gradient(135deg,#B98498,#996B7E)" onclick="goNumHora()"><span class="tile-ic">🔢</span><span class="tile-t">Números y hora</span></button>
+      <button class="tile" style="background:linear-gradient(135deg,#9483B0,#776393)" onclick="goDialogs()"><span class="tile-ic">💬</span><span class="tile-t">Situaciones reales</span></button>
+      <button class="tile" style="background:linear-gradient(135deg,#BC8079,#9C615A)" onclick="goDictado()"><span class="tile-ic">🎧</span><span class="tile-t">Dictado</span></button>
     </div>
     <div class="sectionLabel">🔎 Explorar</div>
     <div class="tilegrid">
-      <button class="tile" onclick="goExplore()"><span class="tile-ic" style="background:#EAF0F4;color:#5A8DB8">📖</span><span class="tile-t">Explorar</span></button>
-      <button class="tile" onclick="goLbKw()"><span class="tile-ic" style="background:#FDEDED;color:#C0392B">🔀</span><span class="tile-t">Líbano vs Kuwait</span></button>
-      <button class="tile" onclick="goStories()"><span class="tile-ic" style="background:#EFEAFB;color:#6C4FBE">📜</span><span class="tile-t">Historias cortas</span></button>
+      <button class="tile" style="background:linear-gradient(135deg,#7C9BAE,#5C7C8E)" onclick="goExplore()"><span class="tile-ic">📖</span><span class="tile-t">Explorar</span></button>
+      <button class="tile" style="background:linear-gradient(135deg,#AD7468,#8C5950)" onclick="goLbKw()"><span class="tile-ic">🔀</span><span class="tile-t">Líbano vs Kuwait</span></button>
+      <button class="tile" style="background:linear-gradient(135deg,#8678AC,#6A5A87)" onclick="goStories()"><span class="tile-ic">📜</span><span class="tile-t">Historias cortas</span></button>
     </div>
     <!-- progreso plegable, discreto al final -->
     <button class="progtoggle" id="progToggle" onclick="toggleProg()">Ver mi progreso <span id="progChev">▾</span></button>
@@ -842,7 +854,7 @@ const VOCAB = {"Saludos y cortesía": [{"es": "La paz contigo", "ar": "السل�
 const CONJUG = {"verbs": [{"inf": "Beber (ashrab)", "ar": "يشرب", "src": "libro KW", "forms": {"ana": ["ashrab", "يشرب"], "enta": ["tashrab", "يشرب"], "enti": ["tashrabeen", "يشرب"], "huwa": ["yashrab", "يشرب"], "hiya": ["tashrab", "يشرب"], "ehna": ["nashrab", "يشرب"], "entu": ["tashrabuun", "يشرب"], "hum": ["yashrabuun", "يشرب"]}}, {"inf": "Comer (aakil)", "ar": "ياكل", "src": "libro KW", "forms": {"ana": ["aakil", "ياكل"], "enta": ["taakil", "ياكل"], "enti": ["taakleen", "ياكل"], "huwa": ["yaakil", "ياكل"], "hiya": ["taakil", "ياكل"], "ehna": ["naakil", "ياكل"], "entu": ["taakluun", "ياكل"], "hum": ["yaakluun", "ياكل"]}}, {"inf": "Ir (aruuh)", "ar": "يروح", "src": "libro KW", "forms": {"ana": ["aruuh", "يروح"], "enta": ["truuh", "يروح"], "enti": ["truuheen", "يروح"], "huwa": ["yiruuh", "يروح"], "hiya": ["truuh", "يروح"], "ehna": ["nruuh", "يروح"], "entu": ["truuhuun", "يروح"], "hum": ["yiruuhuun", "يروح"]}}, {"inf": "Ver (ashuuf)", "ar": "يشوف", "src": "libro KW", "forms": {"ana": ["ashuuf", "يشوف"], "enta": ["tshuuf", "يشوف"], "enti": ["tshuufeen", "يشوف"], "huwa": ["yishuuf", "يشوف"], "hiya": ["tshuuf", "يشوف"], "ehna": ["nshuuf", "يشوف"], "entu": ["tshuufuun", "يشوف"], "hum": ["yishuufuun", "يشوف"]}}, {"inf": "Querer (abi)", "ar": "يبي", "src": "libro KW", "forms": {"ana": ["abi", "يبي"], "enta": ["tebi", "يبي"], "enti": ["tebeen", "يبي"], "huwa": ["yebi", "يبي"], "hiya": ["tebi", "يبي"], "ehna": ["nebi", "يبي"], "entu": ["tebuun", "يبي"], "hum": ["yebuun", "يبي"]}}, {"inf": "Jugar (al3ab)", "ar": "يلعب", "src": "libro KW", "forms": {"ana": ["al3ab", "يلعب"], "enta": ["tal3ab", "يلعب"], "enti": ["tal3abeen", "يلعب"], "huwa": ["yal3ab", "يلعب"], "hiya": ["tal3ab", "يلعب"], "ehna": ["nal3ab", "يلعب"], "entu": ["tal3abuun", "يلعب"], "hum": ["yal3abuun", "يلعب"]}}, {"inf": "Montar/subir (arkab)", "ar": "يركب", "src": "libro KW", "forms": {"ana": ["arkab", "يركب"], "enta": ["tarkib", "يركب"], "enti": ["tarkibeen", "يركب"], "huwa": ["yarkib", "يركب"], "hiya": ["tarkib", "يركب"], "ehna": ["narkib", "يركب"], "entu": ["tarkibuun", "يركب"], "hum": ["yarkibuun", "يركب"]}}, {"inf": "Decir (aguul)", "ar": "يقول", "src": "libro KW", "forms": {"ana": ["aguul", "يقول"], "enta": ["tguul", "يقول"], "enti": ["tguuleen", "يقول"], "huwa": ["yiguul", "يقول"], "hiya": ["tguul", "يقول"], "ehna": ["nguul", "يقول"], "entu": ["tguuluun", "يقول"], "hum": ["yiguuluun", "يقول"]}}, {"inf": "Hablar (akellim)", "ar": "يكلم", "src": "libro KW", "forms": {"ana": ["akellim", "يكلم"], "enta": ["tkellim", "يكلم"], "enti": ["tkellimeen", "يكلم"], "huwa": ["yikellim", "يكلم"], "hiya": ["tkellim", "يكلم"], "ehna": ["nkellim", "يكلم"], "entu": ["tkellimuun", "يكلم"], "hum": ["yikellimuun", "يكلم"]}}, {"inf": "Pedir (atlub)", "ar": "يطلب", "src": "libro KW", "forms": {"ana": ["atlub", "يطلب"], "enta": ["tatlub", "يطلب"], "enti": ["tatlubeen", "يطلب"], "huwa": ["yatlub", "يطلب"], "hiya": ["tatlub", "يطلب"], "ehna": ["natlub", "يطلب"], "entu": ["tatlubuun", "يطلب"], "hum": ["yatlubuun", "يطلب"]}}, {"inf": "Limpiar (akhalliS)", "ar": "يخلص", "src": "libro KW", "forms": {"ana": ["akhallis", "يخلص"], "enta": ["tkhallis", "يخلص"], "enti": ["tkhalliseen", "يخلص"], "huwa": ["yikhallis", "يخلص"], "hiya": ["tkhallis", "يخلص"], "ehna": ["nkhallis", "يخلص"], "entu": ["tkhallisuun", "يخلص"], "hum": ["yikhallisuun", "يخلص"]}}, {"inf": "Dormir (anaam)", "ar": "ينام", "src": "libro KW", "forms": {"ana": ["anaam", "ينام"], "enta": ["tnaam", "ينام"], "enti": ["tnaameen", "ينام"], "huwa": ["yinaam", "ينام"], "hiya": ["tnaam", "ينام"], "ehna": ["nnaam", "ينام"], "entu": ["tnaamuun", "ينام"], "hum": ["yinaamuun", "ينام"]}}, {"inf": "Viajar (asaafir)", "ar": "يسافر", "src": "libro KW", "forms": {"ana": ["asaafir", "يسافر"], "enta": ["tsaafir", "يسافر"], "enti": ["tsaafreen", "يسافر"], "huwa": ["yisaafir", "يسافر"], "hiya": ["tsaafir", "يسافر"], "ehna": ["nsaafir", "يسافر"], "entu": ["tsaafruun", "يسافر"], "hum": ["yisaafruun", "يسافر"]}}, {"inf": "Visitar (azuur)", "ar": "يزور", "src": "libro KW", "forms": {"ana": ["azuur", "يزور"], "enta": ["tzuur", "يزور"], "enti": ["tzuureen", "يزور"], "huwa": ["yizuur", "يزور"], "hiya": ["tzuur", "يزور"], "ehna": ["nzuur", "يزور"], "entu": ["tzuuruun", "يزور"], "hum": ["yizuuruun", "يزور"]}}, {"inf": "Comprar (ashtiri)", "ar": "يشتري", "src": "libro KW", "forms": {"ana": ["ashtiri", "يشتري"], "enta": ["tishtiri", "يشتري"], "enti": ["tishtireen", "يشتري"], "huwa": ["yishtiri", "يشتري"], "hiya": ["tishtiri", "يشتري"], "ehna": ["nishtiri", "يشتري"], "entu": ["tishtiruun", "يشتري"], "hum": ["yishtiruun", "يشتري"]}}, {"inf": "Madrugar (aSbaH)", "ar": "يصبح", "src": "libro KW", "forms": {"ana": ["asbah", "يصبح"], "enta": ["tasbah", "يصبح"], "enti": ["tasbaheen", "يصبح"], "huwa": ["yasbah", "يصبح"], "hiya": ["tasbah", "يصبح"], "ehna": ["nasbah", "يصبح"], "entu": ["tasbahuun", "يصبح"], "hum": ["yasbahuun", "يصبح"]}}, {"inf": "Aprender", "tr": "Atallam", "ar": "يتعلم", "src": "apuntes", "forms": {"ana": ["Atallam", "أتعلم"], "enta": ["Tatallam", "تتعلم"], "enti": ["Tatallamin", "تتعلمين"], "huwa": ["Yatallam", "يتعلم"], "hiya": ["Tatallam", "تتعلم"], "ehna": ["Natallam", "نتعلم"], "entu": ["Tatallamu", "تتعلموا"], "hum": ["Yatallamu", "يتعلموا"]}}, {"inf": "Poder", "tr": "Agdar", "ar": "يقدر", "src": "apuntes", "forms": {"ana": ["Agdar", "أقدر"], "enta": ["Tegdar", "تقدر"], "enti": ["Tegdarin", "تقدرين"], "huwa": ["Yegdar", "يقدر"], "hiya": ["Tegdar", "تقدر"], "ehna": ["Negdar", "نقدر"], "entu": ["Tegdaru", "تقدروا"], "hum": ["Yegdaru", "يقدروا"]}}, {"inf": "Hacer", "tr": "Asawwi", "ar": "يسوي", "src": "revisar", "forms": {"ana": ["Asawwi", "أسوي"], "enta": ["Tsawwi", "تسوي"], "enti": ["Tsawwin", "تسوين"], "huwa": ["Ysawwi", "يسوي"], "hiya": ["Tsawwi", "تسوي"], "ehna": ["Nsawwi", "نسوي"], "entu": ["Tsawwu", "تسووا"], "hum": ["Ysawwu", "يسووا"]}}, {"inf": "Querer/amar", "tr": "Aheb", "ar": "يحب", "src": "revisar", "forms": {"ana": ["Aheb", "أحب"], "enta": ["Theb", "تحب"], "enti": ["Thebbi", "تحبي"], "huwa": ["Yheb", "يحب"], "hiya": ["Theb", "تحب"], "ehna": ["Nheb", "نحب"], "entu": ["Thebbu", "تحبوا"], "hum": ["Yhebbu", "يحبوا"]}}], "pronouns": {"ana": "Yo", "enta": "Tú (m)", "enti": "Tú (f)", "huwa": "Él", "hiya": "Ella", "ehna": "Nosotros", "entu": "Vosotros", "hum": "Ellos"}};
 const DIALOGS = {"dialogs": [{"id": "saludos", "title": "Saludos y presentarse", "icon": "👋", "dialect": "KW", "lines": [{"who": "tu", "es": "Hola, ¿cómo estás?", "tr": "Hala, shlonak?", "ar": "هلا، شلونك؟"}, {"who": "otro", "es": "Bien, gracias a Dios. ¿Y tú?", "tr": "Zein, alhamdulillah. W enta?", "ar": "زين، الحمد لله. و انت؟"}, {"who": "tu", "es": "Bien. Me llamo Pedro.", "tr": "Zein. Esmi Pedro.", "ar": "زين. اسمي بيدرو."}, {"who": "otro", "es": "Encantado. ¿De dónde eres?", "tr": "Tsharrafna. Men wein enta?", "ar": "تشرفنا. من وين انت؟"}, {"who": "tu", "es": "Soy español, de España.", "tr": "Ana espani, men España.", "ar": "أنا اسباني، من اسبانيا."}, {"who": "otro", "es": "¡Bienvenido! ¿Hablas árabe?", "tr": "Ahlan w sahlan! Tetkallam arabi?", "ar": "أهلا و سهلا! تتكلم عربي؟"}, {"who": "tu", "es": "Un poco. Estoy aprendiendo.", "tr": "Shway. Ana atallam.", "ar": "شوي. أنا أتعلم."}]}, {"id": "cafe", "title": "En el café / restaurante", "icon": "☕", "dialect": "KW", "lines": [{"who": "otro", "es": "Bienvenido, ¿qué quieres?", "tr": "Hala, sheno tabi?", "ar": "هلا، شنو تبي؟"}, {"who": "tu", "es": "Quiero un café, por favor.", "tr": "Abi gahwa, law samaht.", "ar": "أبي قهوة، لو سمحت."}, {"who": "otro", "es": "¿Algo de comer?", "tr": "Shay takel?", "ar": "شي تاكل؟"}, {"who": "tu", "es": "Sí, quiero un sándwich.", "tr": "Ee, abi sandwich.", "ar": "إي، أبي ساندويش."}, {"who": "tu", "es": "¿Cuánto es?", "tr": "Kam el-hisab?", "ar": "كم الحساب؟"}, {"who": "otro", "es": "Dos dinares.", "tr": "Dinarein.", "ar": "دينارين."}, {"who": "tu", "es": "Aquí tienes. Gracias.", "tr": "Tfaddal. Shukran.", "ar": "تفضل. شكرا."}]}, {"id": "taxi", "title": "En el taxi", "icon": "🚕", "dialect": "KW", "lines": [{"who": "tu", "es": "Hola, ¿estás libre?", "tr": "Hala, enta fadhi?", "ar": "هلا، انت فاضي؟"}, {"who": "otro", "es": "Sí, ¿a dónde vas?", "tr": "Ee, wein tabi truh?", "ar": "إي، وين تبي تروح؟"}, {"who": "tu", "es": "Al centro comercial, por favor.", "tr": "Lel-mall, law samaht.", "ar": "للمول، لو سمحت."}, {"who": "tu", "es": "¿Cuánto cuesta?", "tr": "Kam yiklif?", "ar": "كم يكلف؟"}, {"who": "otro", "es": "Tres dinares.", "tr": "Tlath dananir.", "ar": "ثلاث دنانير."}, {"who": "tu", "es": "Vale. Para aquí, por favor.", "tr": "Zein. Waqqif hni, law samaht.", "ar": "زين. وقف هني، لو سمحت."}, {"who": "tu", "es": "Gracias, adiós.", "tr": "Shukran, ma3a salama.", "ar": "شكرا، مع السلامة."}]}, {"id": "compras", "title": "Compras y regatear", "icon": "🛍️", "dialect": "KW", "lines": [{"who": "tu", "es": "¿Cuánto cuesta esto?", "tr": "Kam si3ro hada?", "ar": "كم سعره هذا؟"}, {"who": "otro", "es": "Cinco dinares.", "tr": "Khams dananir.", "ar": "خمس دنانير."}, {"who": "tu", "es": "Es muy caro.", "tr": "Wayed ghali.", "ar": "وايد غالي."}, {"who": "tu", "es": "¿Hay descuento?", "tr": "Fi takhfeedh?", "ar": "في تخفيض؟"}, {"who": "otro", "es": "Vale, cuatro dinares.", "tr": "Zein, arba3 dananir.", "ar": "زين، أربع دنانير."}, {"who": "tu", "es": "Lo quiero. Aquí tienes.", "tr": "Abeeh. Tfaddal.", "ar": "أبيه. تفضل."}]}, {"id": "peluqueria", "title": "En la peluquería", "icon": "✂️", "dialect": "KW", "lines": [{"who": "otro", "es": "Bienvenido, ¿qué quieres?", "tr": "Hala, sheno tabi?", "ar": "هلا، شنو تبي؟"}, {"who": "tu", "es": "Quiero cortarme el pelo.", "tr": "Abi agass sha3ri.", "ar": "أبي أقص شعري."}, {"who": "tu", "es": "Corto por los lados, por favor.", "tr": "Gaseer men el-jwanib, law samaht.", "ar": "قصير من الجوانب، لو سمحت."}, {"who": "tu", "es": "La barba con cuchilla.", "tr": "El-lehya bel-shafra.", "ar": "اللحية بالشفرة."}, {"who": "otro", "es": "¿Así está bien?", "tr": "Chithi zein?", "ar": "جذي زين؟"}, {"who": "tu", "es": "Sí, perfecto. Gracias.", "tr": "Ee, mumtaz. Shukran.", "ar": "إي، ممتاز. شكرا."}]}, {"id": "gym", "title": "En el gimnasio", "icon": "🏋️", "dialect": "KW", "lines": [{"who": "tu", "es": "Hola, ¿esto está libre?", "tr": "Hala, hada fadhi?", "ar": "هلا، هذا فاضي؟"}, {"who": "otro", "es": "Sí, adelante.", "tr": "Ee, tfaddal.", "ar": "إي، تفضل."}, {"who": "tu", "es": "¿Me ayudas?", "tr": "Tsa3edni?", "ar": "تساعدني؟"}, {"who": "otro", "es": "Claro. ¿Cuánto peso?", "tr": "Akeed. Kam wazen?", "ar": "أكيد. كم وزن؟"}, {"who": "tu", "es": "¿Podemos alternar?", "tr": "Mumken nbaddel?", "ar": "ممكن نبدل؟"}, {"who": "otro", "es": "Sí, sin problema.", "tr": "Ee, ma fi mushkila.", "ar": "إي، ما في مشكلة."}]}, {"id": "telefono", "title": "Por teléfono", "icon": "📞", "dialect": "KW", "src": "libro KW", "lines": [{"who": "otro", "es": "¿Diga?", "tr": "aloo!", "ar": "الو"}, {"who": "tu", "es": "Paz contigo", "tr": "salaam 3alaykum", "ar": "سلام عليكم"}, {"who": "otro", "es": "Y contigo la paz, hola", "tr": "wa 3alaykum as-salaam, hala", "ar": "و عليكم السلام، هلا"}, {"who": "tu", "es": "Por favor, ¿está Ali?", "tr": "law samaht, 3ali mawjuud?", "ar": "لو سمحت، علي موجود؟"}, {"who": "otro", "es": "¿Qué Ali?", "tr": "3ali minu?", "ar": "علي منو؟"}, {"who": "tu", "es": "Ali al-Khorafi", "tr": "3ali al-khoraafi", "ar": "علي الخرافي"}, {"who": "otro", "es": "No, número equivocado", "tr": "la, raqam ghalat", "ar": "لا، رقم غلط"}, {"who": "tu", "es": "Lo siento", "tr": "aasif walla", "ar": "آسف والله"}, {"who": "otro", "es": "No importa, adiós", "tr": "maykhaalif, ma3assalaama", "ar": "ما يخالف، مع السلامة"}]}, {"id": "regateo", "title": "Regatear en el zoco", "icon": "💰", "dialect": "KW", "src": "libro KW", "lines": [{"who": "tu", "es": "Por favor, ¿cuánto es esto?", "tr": "law samaht, cham haadha?", "ar": "لو سمحت، چم هذا؟"}, {"who": "otro", "es": "Esto veinte dinares", "tr": "haadha 3ishreen deenaar", "ar": "هذا عشرين دينار"}, {"who": "tu", "es": "No, en serio, ¡muy caro!", "tr": "la, eshda3wa, waayid ghaali!", "ar": "لا، اشدعوة، وايد غالي"}, {"who": "otro", "es": "¿Quince, bien?", "tr": "thimanta3ash, zeyn?", "ar": "ثمنطعش، زين؟"}, {"who": "tu", "es": "No, ¡catorce, último precio!", "tr": "la walla, khamasta3ash aakhir sheyy!", "ar": "لا والله، خمسطعش آخر شي"}]}, {"id": "direcciones_real", "title": "Preguntar direcciones", "icon": "🧭", "dialect": "KW", "src": "libro KW", "lines": [{"who": "tu", "es": "Por favor, ¿hay comisaría aquí?", "tr": "law samaht, fee makhfar hini?", "ar": "لو سمحت، في مخفر هني؟"}, {"who": "otro", "es": "Sí hay. Mira: ve recto", "tr": "na3am fee. shuuf, ruuh seeda", "ar": "نعم في. شوف، روح سيدة"}, {"who": "otro", "es": "Luego coge la primera calle a la derecha", "tr": "ba3deyn ikhidh ewwil shaari3 3ala l-yimeen", "ar": "بعدين اخذ اول شارع على اليمين"}, {"who": "tu", "es": "¡Muchas gracias!", "tr": "mashkuur walla!", "ar": "مشكور والله"}, {"who": "otro", "es": "De nada", "tr": "hayyaak alla", "ar": "الله يحييك"}]}, {"id": "restaurante_real", "title": "Pedir en el restaurante", "icon": "🍽️", "dialect": "KW", "src": "libro KW", "lines": [{"who": "otro", "es": "Bienvenido, ¡adelante!", "tr": "ahlan wa sahlan, tfadhalu!", "ar": "اهلا و سهلا، تفضلوا"}, {"who": "tu", "es": "Gracias. Por favor, ¿qué hay hoy?", "tr": "shukran! law samaht, shinu fee al-yowm?", "ar": "شكرا! لو سمحت، شنو في اليوم؟"}, {"who": "otro", "es": "Hay de todo: pescado a la brasa, kebab, arroz", "tr": "fee kill shey: simich meshwi, kabaab, 3eysh", "ar": "في كل شي: سمچ مشوي، كباب، عيش"}, {"who": "tu", "es": "Quiero kebab, un plato de hummus y ensalada", "tr": "ebi kabaab u sahan hummus u salata", "ar": "ابي كباب و صحن حمص و سلطة"}, {"who": "tu", "es": "Quiero zumo de naranja", "tr": "ebi 3aseer burtuqaal", "ar": "ابي عصير برتقال"}, {"who": "otro", "es": "La comida muy rica... ¡gracias!", "tr": "al-ekil waayid hilu, mashkuur!", "ar": "الاكل وايد حلو، مشكور"}, {"who": "tu", "es": "¡Camarero, la cuenta por favor!", "tr": "garcon! al-faatuura, law samaht!", "ar": "جرسون! الفاتورة، لو سمحت"}]}, {"id": "aeropuerto", "title": "En el aeropuerto", "icon": "✈️", "dialect": "Común", "lines": [{"who": "tu", "es": "Aquí está mi pasaporte y mi billete, por favor", "tr": "Hatha jawaz safari wa tathkirati, min fadlak", "ar": "هذا جواز سفري وتذكرتي، من فضلك"}, {"who": "otro", "es": "Gracias, aquí tiene su tarjeta de embarque", "tr": "Tfaddal bitaqat as-su'ud", "ar": "تفضل بطاقة الصعود"}, {"who": "tu", "es": "¿Dónde está la puerta de embarque?", "tr": "Wen al-bawwaba?", "ar": "وين البوابة؟"}, {"who": "otro", "es": "La puerta diez, todo recto", "tr": "Al-bawwaba ashara, seeda", "ar": "البوابة عشرة، سيدة"}, {"who": "tu", "es": "¿Cuánto pesa mi maleta?", "tr": "Kam wazn haqibati?", "ar": "كم وزن حقيبتي؟"}, {"who": "otro", "es": "Está bien, no pesa mucho", "tr": "Zeyn, mu wayed", "ar": "زين، مو وايد"}, {"who": "tu", "es": "Gracias, buen viaje", "tr": "Shukran, rehla sa3ida", "ar": "شكرا، رحلة سعيدة"}]}, {"id": "visita", "title": "Visita a un amigo", "icon": "🏠", "dialect": "KW", "lines": [{"who": "otro", "es": "¡Bienvenido! Adelante, por favor", "tr": "Ahlan wa sahlan! Tfaddal", "ar": "أهلا وسهلا! تفضل"}, {"who": "tu", "es": "Gracias, gracias a Dios estoy muy bien", "tr": "Shukran, alhamdulillah zeyn ktir", "ar": "شكرا، الحمد لله زين كتير"}, {"who": "otro", "es": "¿Quieres un café o un té?", "tr": "Tabi gahwa aw shai?", "ar": "تبي قهوة أو شاي؟"}, {"who": "tu", "es": "Quiero café, por favor", "tr": "Abi gahwa law samaht", "ar": "أبي قهوة لو سمحت"}, {"who": "otro", "es": "Por supuesto, ahora te lo traigo", "tr": "Akeed, al-heen ajeeb lak", "ar": "أكيد، الحين أجيب لك"}, {"who": "tu", "es": "Muchas gracias, qué amable", "tr": "Mashkoor walla", "ar": "مشكور والله"}]}]};
 const CATEGORIES = {
-  'verbo':     {name:'Verbos',     icon:'🏃', color:'#0E9594', desc:'Acciones'},
+  'verbo':     {name:'Verbos',     icon:'🏃', color:'#3F6F6D', desc:'Acciones'},
   'sustantivo':{name:'Sustantivos',icon:'📦', color:'#3B82C4', desc:'Cosas, personas, lugares'},
   'adjetivo':  {name:'Adjetivos',  icon:'🎨', color:'#E0A53B', desc:'Cómo son las cosas'},
   'expresion': {name:'Expresiones',icon:'💬', color:'#8B6FC9', desc:'Frases hechas'},
@@ -1438,7 +1450,7 @@ function renderExplore(){
     acc.appendChild(body);cont.appendChild(acc)});
   if(total===0)cont.innerHTML='<div class="empty">No hay palabras con ese filtro o búsqueda.</div>';
 }
-function barColor(pct){if(pct>=80)return '#16A085';if(pct>=50)return '#C8902F';if(pct>=20)return '#0E9594';return '#C77'}
+function barColor(pct){if(pct>=80)return '#16A085';if(pct>=50)return '#C8902F';if(pct>=20)return '#3F6F6D';return '#C77'}
 
 /* ---------- PRACTICE SETUP ---------- */
 const tc=document.getElementById('topicChips');
@@ -1966,7 +1978,7 @@ function goStories(){
   hideAll();document.getElementById('stories').style.display='block';
   let h='<div style="text-align:center;margin-bottom:14px"><div style="font-family:\'Fraunces\',serif;font-size:26px;font-weight:600">📜 Historias cortas</div><div style="font-size:13px;color:#5A6B73;margin-top:4px">Lee en árabe. Toca una línea (o pasa el ratón) si te atascas.</div></div>';
   STORIES.forEach((s,i)=>{
-    h+='<button class="rowcard" onclick="openStory('+i+')"><span class="rc-ic" style="background:#EFEAFB;color:#6C4FBE">'+s.icon+'</span><span class="rc-txt"><span class="rc-t">'+s.title+'</span><span class="rc-d">'+s.lines.length+' frases</span></span><span class="rc-go">→</span></button>';
+    h+='<button class="rowcard" onclick="openStory('+i+')"><span class="rc-ic" style="background:linear-gradient(145deg,#EFEAFB,#DFD4F4);color:#6C4FBE">'+s.icon+'</span><span class="rc-txt"><span class="rc-t">'+s.title+'</span><span class="rc-d">'+s.lines.length+' frases</span></span><span class="rc-go">→</span></button>';
   });
   document.getElementById('storiesStage').innerHTML=h;
 }
@@ -2830,9 +2842,9 @@ function clockSVG(h,mm){
   const mr=(a)=>{const r=(a-90)*Math.PI/180;return [100+62*Math.cos(r),100+62*Math.sin(r)];};
   const[hx,hy]=hr(hourAngle),[mx,my]=mr(minAngle);
   let ticks='';for(let i=0;i<12;i++){const a=i*30*Math.PI/180;const x1=100+70*Math.sin(a),y1=100-70*Math.cos(a),x2=100+78*Math.sin(a),y2=100-78*Math.cos(a);ticks+='<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="#C9D6DB" stroke-width="2"/>';}
-  return '<svg viewBox="0 0 200 200" class="nh-clock"><circle cx="100" cy="100" r="84" fill="#fff" stroke="#0E9594" stroke-width="3"/>'+ticks+
+  return '<svg viewBox="0 0 200 200" class="nh-clock"><circle cx="100" cy="100" r="84" fill="#fff" stroke="#3F6F6D" stroke-width="3"/>'+ticks+
     '<line x1="100" y1="100" x2="'+hx+'" y2="'+hy+'" stroke="#16242B" stroke-width="5" stroke-linecap="round"/>'+
-    '<line x1="100" y1="100" x2="'+mx+'" y2="'+my+'" stroke="#0E9594" stroke-width="3" stroke-linecap="round"/>'+
+    '<line x1="100" y1="100" x2="'+mx+'" y2="'+my+'" stroke="#3F6F6D" stroke-width="3" stroke-linecap="round"/>'+
     '<circle cx="100" cy="100" r="5" fill="#16242B"/></svg>';
 }
 function renderHour(){
