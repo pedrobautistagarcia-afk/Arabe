@@ -1204,7 +1204,12 @@ function updateRec(w,result){const p=loadProg();const k=wordKey(w);const cur=p[k
   if(result==='ok')box=Math.min(box+1,INTERVALS.length-1);else if(result==='mid')box=Math.max(box,1);else box=0;
   p[k]={s:result,box:box,due:Date.now()+INTERVALS[box]*DAY,t:Date.now()};saveProg(p)}
 function markKnown(w){const p=loadProg();p[wordKey(w)]={s:'ok',box:INTERVALS.length-1,due:Date.now()+INTERVALS[INTERVALS.length-1]*DAY,t:Date.now()};saveProg(p);renderExplore()}
-function dueWords(){const p=loadProg();const now=Date.now();const out=[];TOPICS.forEach(t=>VOCAB[t].forEach(w=>{const r=p[wordKey(w)];if(r&&r.due&&r.due<=now)out.push({...w,topic:t})}));return out}
+function dueWords(){
+  const p=loadProg();const now=Date.now();const out=[];
+  TOPICS.forEach(t=>VOCAB[t].forEach(w=>{const r=p[wordKey(w)];if(r&&r.due&&r.due<=now)out.push({...w,topic:t})}));
+  if(typeof LEVELS!=='undefined')Object.values(LEVELS.levels).forEach(arr=>arr.forEach(w=>{const r=p[wordKey(w)];if(r&&r.due&&r.due<=now)out.push(w)}));
+  return out;
+}
 
 /* ---------- MINI-TEST DE NIVEL ---------- */
 const LTKEY='pedrolingo_leveltest_v1';
@@ -1418,6 +1423,9 @@ function renderSyncPanel(){
   let h='<div class="progpanel"><h3>Sincronizar entre dispositivos <span id="syncBadge" class="syncBadge '+syncStatus+'"></span></h3>';
   if(syncCode){
     h+='<div style="font-size:13px;color:#5A6B73;margin-bottom:10px">Vinculado con el código: <b>'+syncCode+'</b></div>';
+    const lastSync=Number(localStorage.getItem(LASTLOCALKEY)||0);
+    h+='<div style="font-size:11.5px;color:#9DB0B8;margin-bottom:10px">'+(lastSync?'Última sincronización: '+new Date(lastSync).toLocaleString():'Aún no se ha sincronizado en este dispositivo')+'</div>';
+    h+='<button class="lvlbtn" onclick="syncMerge(true)">🔄 Sincronizar ahora</button>';
     h+='<button class="lvlbtn2" onclick="unlinkDevice()">Desvincular este dispositivo</button>';
   }else{
     h+='<div style="font-size:13px;color:#5A6B73;margin-bottom:10px">Pon el mismo código en todos tus dispositivos (móvil, Mac...) para que comparta el progreso.</div>';
@@ -1535,7 +1543,18 @@ document.querySelectorAll('#conjModeBox .chip').forEach(m=>m.onclick=()=>{docume
 
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
 function isLongPhrase(w){if(!w)return false;if(w.cat==='frase')return true;const s=w.es||'';return s.length>22||s.trim().split(/\s+/).length>4;}
-function pickModeFor(w){const pool=isLongPhrase(w)?['flash','quiz']:['flash','quiz','write'];return pool[Math.random()*pool.length|0];}
+// El modo de pregunta sube de exigencia según lo que ya domines esa palabra:
+// nueva/recién fallada -> solo tarjeta; la vas reconociendo -> test; ya la dominas -> escribirla de memoria.
+function pickModeFor(w){
+  if(isLongPhrase(w)){const pool=['flash','quiz'];return pool[Math.random()*pool.length|0]}
+  const rec=getRec(w);const box=rec?(rec.box||0):0;
+  let pool;
+  if(box<=0)pool=['flash','flash','quiz'];
+  else if(box===1)pool=['flash','quiz','quiz'];
+  else if(box<=3)pool=['quiz','quiz','write'];
+  else pool=['write','write','quiz'];
+  return pool[Math.random()*pool.length|0];
+}
 
 /* ---------- ENGINE (vocab practice) ---------- */
 function start(){sessionType='practice';claseSessionN=null;claseSessionTopic=null;let pool=[];sel.forEach(t=>VOCAB[t].forEach(w=>pool.push({...w,topic:t})));shuffle(pool);if(len>0)pool=pool.slice(0,len);
@@ -2481,6 +2500,9 @@ function buildPhrasePool(){
   if(BUILDSENT&&BUILDSENT.frases)BUILDSENT.frases.forEach(f=>ALLPHRASES.push(f));
   if(typeof VERBS2!=='undefined')Object.values(VERBS2.categorias).forEach(vs=>vs.forEach(v=>{
     (v.frases||[]).forEach(f=>ALLPHRASES.push(f));
+  }));
+  if(typeof LEVELS!=='undefined')Object.values(LEVELS.levels).forEach(arr=>arr.forEach(w=>{
+    if(w.cat==='frase'&&w.ar&&w.es)ALLPHRASES.push({ar:w.ar,tr:w.tr,es:w.es});
   }));
 }
 buildPhrasePool();
