@@ -632,8 +632,8 @@
       </div>
     </div>
     <!-- progreso plegable, discreto al final -->
-    <button class="progtoggle" id="progToggle" onclick="toggleProg()">Ver mi progreso <span id="progChev">▾</span></button>
-    <div id="progDetail" style="display:none"></div>
+    <div class="indexLabel" style="margin-top:24px"><span class="num">IV</span><span class="word">Mi progreso</span></div>
+    <div id="progDetail"></div>
   </div>
 
   <!-- EXPLORE -->
@@ -1480,14 +1480,7 @@ function renderProgDetail(){
   cont.innerHTML=html;
   try{renderSyncBadge()}catch(e){}
 }
-function toggleProg(){
-  const d=document.getElementById('progDetail');const t=document.getElementById('progToggle');
-  const open=d.style.display!=='none';
-  d.style.display=open?'none':'block';
-  if(!open){void d.offsetHeight;} // fuerza un repintado en móviles donde a veces no se pinta a la primera
-  t.classList.toggle('open',!open);
-  t.firstChild.textContent=open?'Ver mi progreso ':'Ocultar progreso ';
-}
+
 
 
 /* ---------- SRS ---------- */
