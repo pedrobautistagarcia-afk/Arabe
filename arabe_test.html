@@ -996,6 +996,7 @@ let mgPairs=[], mgLeft=[], mgRight=[], mgSelLeft=null, mgMatched=new Set(), mgAt
 let nhDeck=[], nhIdx=0, nhScore=0, nhMode='menu';
 let mode='mix', dir='both', len=10, voiceOn=true, dictLen=10, conjMode='table';
 let deck=[], idx=0, score={ok:0,mid:0,no:0}, sessionType='practice';
+let claseSessionN=null, claseSessionTopic=null;
 
 /* ---------- VOICE ---------- */
 let arVoice=null, voicesLoaded=false, audioUnlocked=false;
@@ -1361,7 +1362,7 @@ function toggleProg(){
 
 
 /* ---------- SRS ---------- */
-function startSRS(){const due=dueWords();if(due.length===0)return;sessionType='srs';shuffle(due);
+function startSRS(){const due=dueWords();if(due.length===0)return;sessionType='srs';claseSessionN=null;claseSessionTopic=null;shuffle(due);
   deck=due.slice(0,20).map(w=>{let d=Math.random()<.5?'es2ar':'ar2es';let m=pickModeFor(w);return{w,d,m}});
   idx=0;score={ok:0,mid:0,no:0};hideAll();document.getElementById('study').style.display='block';render()}
 
@@ -1440,7 +1441,7 @@ function isLongPhrase(w){if(!w)return false;if(w.cat==='frase')return true;const
 function pickModeFor(w){const pool=isLongPhrase(w)?['flash','quiz']:['flash','quiz','write'];return pool[Math.random()*pool.length|0];}
 
 /* ---------- ENGINE (vocab practice) ---------- */
-function start(){sessionType='practice';let pool=[];sel.forEach(t=>VOCAB[t].forEach(w=>pool.push({...w,topic:t})));shuffle(pool);if(len>0)pool=pool.slice(0,len);
+function start(){sessionType='practice';claseSessionN=null;claseSessionTopic=null;let pool=[];sel.forEach(t=>VOCAB[t].forEach(w=>pool.push({...w,topic:t})));shuffle(pool);if(len>0)pool=pool.slice(0,len);
   deck=pool.map(w=>{let d=dir;if(d==='both')d=Math.random()<.5?'es2ar':'ar2es';let m=mode;if(m==='mix')m=pickModeFor(w);return{w,d,m}});
   idx=0;score={ok:0,mid:0,no:0};hideAll();document.getElementById('study').style.display='block';render()}
 
@@ -1591,7 +1592,7 @@ function renderWrite(w,d){const qAr=isArPrompt(d);const stage=document.getElemen
   document.getElementById('wcheck').onclick=check;inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!inp.disabled)check()})}
 
 /* ---------- DICTADO ENGINE ---------- */
-function startDictado(){sessionType='dictado';let pool=[];dictSel.forEach(t=>VOCAB[t].forEach(w=>{if(w.ar)pool.push({...w,topic:t})}));shuffle(pool);pool=pool.slice(0,dictLen);
+function startDictado(){sessionType='dictado';claseSessionN=null;claseSessionTopic=null;let pool=[];dictSel.forEach(t=>VOCAB[t].forEach(w=>{if(w.ar)pool.push({...w,topic:t})}));shuffle(pool);pool=pool.slice(0,dictLen);
   deck=pool.map(w=>({w}));idx=0;score={ok:0,mid:0,no:0};hideAll();document.getElementById('study').style.display='block';render()}
 function renderDict(item){const w=item.w;const stage=document.getElementById('stage');const arS=sayAr(w).replace(/'/g,"\\'");
   stage.innerHTML='<div class="dicthint">Pulsa para escuchar las veces que necesites</div>'+
@@ -1615,7 +1616,7 @@ function renderDict(item){const w=item.w;const stage=document.getElementById('st
 const PRONS=['ana','enta','enti','huwa','hiya','ehna','entu','hum'];
 function startConjug(){
   if(conjMode==='table')return showConjTable();
-  sessionType='conjug';let pool=[];
+  sessionType='conjug';claseSessionN=null;claseSessionTopic=null;let pool=[];
   conjSel.forEach(vi=>{const v=CONJUG.verbs[vi];PRONS.forEach(pr=>{pool.push({v,pr})})});
   shuffle(pool);pool=pool.slice(0,Math.min(pool.length,24));
   deck=pool.map(x=>x);idx=0;score={ok:0,mid:0,no:0};hideAll();document.getElementById('study').style.display='block';render()}
@@ -1703,7 +1704,7 @@ function done(){
     (sessionType==='conjug'?'':'<div class="scol"><div class="n mid">'+score.mid+'</div><div class="l">'+labels[1]+'</div></div>')+
     '<div class="scol"><div class="n no">'+score.no+'</div><div class="l">'+labels[2]+'</div></div></div>'+
     '<button class="start" onclick="repeatSession()" style="margin-bottom:10px">Otra ronda</button>'+repeatBtn+
-    (curLevel?'<button class="start" onclick="backToLevels()" style="margin-top:10px;background:var(--teal)">🗺️ Ver mis niveles</button>':'')+
+    (claseSessionN!=null?'<button class="start" onclick="openClase('+claseSessionN+')" style="margin-top:10px;background:var(--teal)">🎓 Volver a la clase</button>':(curLevel?'<button class="start" onclick="backToLevels()" style="margin-top:10px;background:var(--teal)">🗺️ Ver mis niveles</button>':''))+
     '<button class="back" style="display:block;margin:14px auto 0" onclick="goHome()">← Inicio</button></div>';
   if(curLevel)checkLevelUnlock(curLevel);
 }
@@ -1720,13 +1721,22 @@ function checkLevelUnlock(L){
   }
 }
 function repeatSession(){
+  if(claseSessionN!=null)return claseSessionTopic?startClaseTopicWords(claseSessionN,claseSessionTopic):startClasePractice(claseSessionN);
   if(curLevel)return startLevel(curLevel);
   if(sessionType==='dictado')return startDictado();
   if(sessionType==='conjug')return startConjug();
   if(sessionType==='srs')return startSRS();
   return start();
 }
-function repeatWrong(){let pool=[];sel.forEach(t=>VOCAB[t].forEach(w=>{const s=getStatus(w);if(s==='no'||s==='mid')pool.push({...w,topic:t})}));if(pool.length===0)return;shuffle(pool);
+function repeatWrong(){
+  let pool=[];
+  if(claseSessionN!=null){
+    pool=getClaseWords(claseSessionN).filter(w=>!claseSessionTopic||w.topic===claseSessionTopic).filter(w=>{const s=getStatus(w);return s==='no'||s==='mid'});
+    if(pool.length===0)return;shuffle(pool);
+    deck=pool.map(w=>{let d=Math.random()<.5?'es2ar':'ar2es';let m=pickModeFor(w);return{w,d,m}});idx=0;score={ok:0,mid:0,no:0};render();return;
+  }
+  sel.forEach(t=>VOCAB[t].forEach(w=>{const s=getStatus(w);if(s==='no'||s==='mid')pool.push({...w,topic:t})}));
+  if(pool.length===0)return;shuffle(pool);
   deck=pool.map(w=>{let d=dir;if(d==='both')d=Math.random()<.5?'es2ar':'ar2es';let m=mode;if(m==='mix')m=pickModeFor(w);return{w,d,m}});idx=0;score={ok:0,mid:0,no:0};render()}
 
 document.addEventListener('keydown',e=>{if(document.getElementById('study').style.display==='none')return;const it=deck[idx];const m=it&&it.m;
@@ -1800,7 +1810,7 @@ function renderClases(){
   document.getElementById('clasesStage').innerHTML=h;
 }
 function startClasePractice(n){
-  sessionType='practice';curLevel=null;
+  sessionType='practice';curLevel=null;claseSessionN=n;claseSessionTopic=null;
   let pool=orderShortFirst(getClaseWords(n),16,8);
   if(!pool.length)return;
   deck=pool.map(w=>{let d=Math.random()<.5?'es2ar':'ar2es';let m=pickModeFor(w);return{w,d,m}});
@@ -1987,7 +1997,7 @@ function openLevelStudy(L){
 }
 function startLevel(L){
   if(!levelUnlocked(L)){return;}
-  sessionType='practice';curLevel=L;
+  sessionType='practice';curLevel=L;claseSessionN=null;claseSessionTopic=null;
   let pool=(LEVELS.levels[String(L)]||[]).slice();
   shuffle(pool);
   if(pool.length>15)pool=pool.slice(0,15); // sesiones de 15 para no agobiar
@@ -2422,7 +2432,7 @@ function startClaseFull(n){
   if(getClaseVerbs(n).length)startVerbsForClase(n);else startClasePractice(n);
 }
 function startClaseTopicWords(n,topic){
-  sessionType='practice';curLevel=null;
+  sessionType='practice';curLevel=null;claseSessionN=n;claseSessionTopic=topic;
   let pool=orderShortFirst(getClaseWords(n).filter(w=>w.topic===topic),10,6);
   if(!pool.length)return;
   deck=pool.map(w=>{let d=Math.random()<.5?'es2ar':'ar2es';let m=pickModeFor(w);return{w,d,m}});
