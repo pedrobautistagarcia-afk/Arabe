@@ -635,6 +635,7 @@
     </div>
     <!-- progreso plegable, discreto al final -->
     <div class="indexLabel" style="margin-top:24px"><span class="num">IV</span><span class="word">Mi progreso</span></div>
+    <button class="lvlbtn" style="margin-bottom:14px" onclick="renderHome()">🔄 Ver / actualizar mi progreso</button>
     <div id="progDetail"></div>
   </div>
 
@@ -2998,15 +2999,19 @@ function showNumberRef(){
 recordSnapshot();
 initSync();
 goHome();
-// Red de seguridad: algunos navegadores no pintan bien el contenido inyectado por JS
-// en la primerísima carga (se queda "oculto" hasta el primer cambio de pantalla).
-// Forzamos un repintado real del documento poco después de cargar.
-requestAnimationFrame(()=>requestAnimationFrame(()=>{
-  void document.body.offsetHeight;
-  document.body.style.display='none';
-  void document.body.offsetHeight;
-  document.body.style.display='';
-}));
+// Red de seguridad por fuerza bruta: en algunos navegadores el contenido del home
+// no se pinta en la primerísima carga aunque ya esté generado correctamente.
+// En vez de adivinar la causa exacta, repintamos el home varias veces durante
+// los primeros segundos tras cargar, por si acaso.
+function forceRepaint(){
+  if(document.getElementById('home').style.display==='none')return; // si ya navegó a otra pantalla, no tocar
+  const af=document.activeElement;
+  if(af&&(af.tagName==='INPUT'||af.tagName==='TEXTAREA'))return; // no pisar lo que el usuario está escribiendo
+  renderHome();
+  const b=document.body;b.style.display='none';void b.offsetHeight;b.style.display='';
+}
+[0,150,400,800,1500,3000].forEach(ms=>setTimeout(forceRepaint,ms));
+window.addEventListener('load',forceRepaint);
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('sw.js').catch(()=>{});
