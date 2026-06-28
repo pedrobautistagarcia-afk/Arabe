@@ -1481,6 +1481,10 @@ function saveUserName(){
 function skipUserName(){setUserName('—');goHowTo();}
 /* ---------- CONTACTO / SUGERIR CONTENIDO ---------- */
 /* ---------- BUZÓN (lectura de sugerencias, acceso por #buzon) ---------- */
+function deleteInboxMsg(id){
+  if(!confirm('¿Eliminar este mensaje? No se puede deshacer.'))return;
+  fbDb.collection('pedrolingo_sugerencias').doc(id).delete().then(goInbox).catch(e=>alert('No se pudo eliminar: '+e.message));
+}
 function goInbox(){
   showScreen('inbox');
   const el=document.getElementById('inboxStage');
@@ -1497,6 +1501,7 @@ function goInbox(){
       if(d.mensaje)h+='<div style="font-size:13.5px;margin-bottom:8px;white-space:pre-wrap">'+d.mensaje+'</div>';
       if(d.foto)h+='<img src="'+d.foto+'" style="max-width:100%;border-radius:10px;border:1px solid var(--line)">';
       if(d.archivo)h+='<a href="'+d.archivo+'" download="'+(d.archivoNombre||'archivo')+'" class="mini">⬇️ Descargar '+(d.archivoNombre||'archivo')+'</a>';
+      h+='<button class="mini" style="color:#C0392B;margin-top:6px;align-self:flex-start" onclick="deleteInboxMsg(\''+doc.id+'\')">🗑️ Eliminar</button>';
       h+='</div>';
     });
     el.innerHTML=h;
