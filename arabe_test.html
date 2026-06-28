@@ -1309,9 +1309,6 @@ function showScreen(id){
   hideAll();
   const el=document.getElementById(id);
   if(el)el.style.display='block';
-  document.body.style.display='none';
-  void document.body.offsetHeight;
-  document.body.style.display='';
 }
 function goHome(){curLevel=null;hideAll();document.getElementById('home').style.display='block';if('speechSynthesis' in window)speechSynthesis.cancel();renderHome()}
 function goExplore(){hideAll();document.getElementById('explore').style.display='block';renderExplore()}
@@ -2088,7 +2085,8 @@ function openClase(n){
       h+='<div class="studyTableWrap"><table class="studyTable"><thead><tr><th>Árabe</th><th>Transcripción</th><th>Español</th><th></th></tr></thead><tbody>';
       list.forEach(ww=>{
         const arS=sayAr(ww).replace(/'/g,"\\'");
-        h+='<tr class="wordRow"><td class="colAr">'+(ww.ar||'')+'</td><td class="colTr">'+(ww.tr||'')+'</td><td class="colEs">'+ww.es+(ww.nota?'<div style="font-size:10px;color:#9DB0B8;font-weight:400;margin-top:2px">⚠️ '+ww.nota+'</div>':'')+(ww.raiz?'<div style="font-size:10px;color:#9DB0B8;font-weight:400;margin-top:2px">🌱 '+ww.raiz+'</div>':'')+'</td><td class="colSpeak">'+(ww.ar?'<button class="miniSpeak" onclick="speak(\''+arS+'\')">🔊</button>':'')+'</td></tr>';
+        const mastered=wordMastered(ww);
+        h+='<tr class="wordRow'+(mastered?' mastered':'')+'"><td class="colAr">'+(ww.ar||'')+'</td><td class="colTr">'+(ww.tr||'')+'</td><td class="colEs">'+(mastered?'<span class="masteredCheck">✅</span> ':'')+ww.es+(ww.nota?'<div style="font-size:10px;color:#9DB0B8;font-weight:400;margin-top:2px">⚠️ '+ww.nota+'</div>':'')+(ww.raiz?'<div style="font-size:10px;color:#9DB0B8;font-weight:400;margin-top:2px">🌱 '+ww.raiz+'</div>':'')+'</td><td class="colSpeak">'+(ww.ar?'<button class="miniSpeak" onclick="speak(\''+arS+'\')">🔊</button>':'')+'</td></tr>';
       });
       h+='</tbody></table></div>';
     });
