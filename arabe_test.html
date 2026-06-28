@@ -1305,7 +1305,7 @@ function renderStreak(){const s=loadStreak();const b=document.getElementById('st
 }
 
 /* ---------- NAV ---------- */
-function hideAll(){const w=document.querySelector('.wrap');if(w)w.classList.remove('wide');['home','explore','setup','dictSetup','conjSetup','dialogs','levels','levelStudy','lbkw','verbStudy','verbFlash','verbMatch','stories','storyRead','build','verbs','numhora','study','clases','claseDetail','synonyms'].forEach(id=>document.getElementById(id).style.display='none')}
+function hideAll(){const w=document.querySelector('.wrap');if(w)w.classList.remove('wide');['home','explore','setup','dictSetup','conjSetup','dialogs','levels','levelStudy','lbkw','verbStudy','verbFlash','verbMatch','stories','storyRead','build','verbs','numhora','study','clases','claseDetail','synonyms'].forEach(id=>document.getElementById(id).style.display='none');window.scrollTo(0,0)}
 // Cambia de pantalla y fuerza un repintado real del documento entero (no solo del elemento),
 // porque en algunos navegadores el contenido inyectado tras un cambio de pantalla no se
 // pinta hasta que algo más fuerza un recálculo visual.
@@ -1313,6 +1313,7 @@ function showScreen(id){
   hideAll();
   const el=document.getElementById(id);
   if(el)el.style.display='block';
+  window.scrollTo(0,0);
 }
 function goHome(){curLevel=null;hideAll();document.getElementById('home').style.display='block';if('speechSynthesis' in window)speechSynthesis.cancel();renderHome()}
 function goExplore(){hideAll();document.getElementById('explore').style.display='block';renderExplore()}
