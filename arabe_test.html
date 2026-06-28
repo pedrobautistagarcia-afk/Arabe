@@ -245,6 +245,10 @@
   .indexRow:hover .indexGo{color:var(--clay);transform:translateX(2px)}
   .todoCard{background:none;border:none;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:13px 2px;margin-top:18px}
   .dailyCard{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:12px;text-align:center;cursor:pointer;box-shadow:var(--shadow-sm);transition:.15s}
+  .howtoItem{display:flex;gap:12px;align-items:flex-start;padding:13px 2px;border-bottom:1px solid var(--line)}
+  .howtoIc{flex-shrink:0;font-size:20px;width:32px;text-align:center}
+  .howtoT{font-family:'Fraunces',serif;font-weight:600;font-size:15px;margin-bottom:3px}
+  .howtoD{font-size:12.5px;color:#5A6B73;line-height:1.45}
   .dailyCard:hover{box-shadow:var(--shadow-md)}
   .dailyLbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9DB0B8;margin-bottom:6px}
   .dailyAr{font-family:'Noto Naskh Arabic',serif;font-size:21px;direction:rtl}
@@ -627,6 +631,7 @@
         <button class="indexRow" onclick="goClases()"><span class="indexIc">🎓</span><span class="indexTxt"><span class="indexT">Mis clases</span><span class="indexD">Lo visto con tu profesor</span></span><span class="indexGo">→</span></button>
         <button class="indexRow" onclick="goSynonyms()"><span class="indexIc">⚖️</span><span class="indexTxt"><span class="indexT">Formas dobles</span><span class="indexD">Sinónimos para no confundir</span></span><span class="indexGo">→</span></button>
         <button class="indexRow" onclick="goMistakes()"><span class="indexIc">🎯</span><span class="indexTxt"><span class="indexT">Mis fallos</span><span class="indexD">Lo que más se te resiste</span></span><span class="indexGo">→</span></button>
+        <button class="indexRow" onclick="goHowTo()"><span class="indexIc">❓</span><span class="indexTxt"><span class="indexT">Cómo funciona</span><span class="indexD">Guía rápida de toda la app</span></span><span class="indexGo">→</span></button>
       </div>
     </div>
     <div class="indexGroup">
@@ -834,6 +839,12 @@
   <div id="mistakes" style="display:none">
     <button class="backHome" onclick="goHome()">← Inicio</button>
     <div id="mistakesStage"></div>
+  </div>
+
+  <!-- COMO FUNCIONA -->
+  <div id="howto" style="display:none">
+    <button class="backHome" onclick="goHome()">← Inicio</button>
+    <div id="howtoStage"></div>
   </div>
 
   <!-- SYNONYMS / FORMAS DOBLES -->
@@ -1348,7 +1359,7 @@ function renderStreak(){const s=loadStreak();const b=document.getElementById('st
 }
 
 /* ---------- NAV ---------- */
-function hideAll(){const w=document.querySelector('.wrap');if(w)w.classList.remove('wide');['home','explore','setup','dictSetup','conjSetup','dialogs','levels','levelStudy','lbkw','verbStudy','verbFlash','verbMatch','stories','storyRead','build','verbs','numhora','study','clases','claseDetail','synonyms','mistakes'].forEach(id=>document.getElementById(id).style.display='none');window.scrollTo(0,0)}
+function hideAll(){const w=document.querySelector('.wrap');if(w)w.classList.remove('wide');['home','explore','setup','dictSetup','conjSetup','dialogs','levels','levelStudy','lbkw','verbStudy','verbFlash','verbMatch','stories','storyRead','build','verbs','numhora','study','clases','claseDetail','synonyms','mistakes','howto'].forEach(id=>document.getElementById(id).style.display='none');window.scrollTo(0,0)}
 // Cambia de pantalla y fuerza un repintado real del documento entero (no solo del elemento),
 // porque en algunos navegadores el contenido inyectado tras un cambio de pantalla no se
 // pinta hasta que algo más fuerza un recálculo visual.
@@ -1451,9 +1462,23 @@ function renderNamePrompt(){
 function saveUserName(){
   const inp=document.getElementById('nameInput');if(!inp)return;
   const n=inp.value.trim();if(!n)return;
-  setUserName(n);renderHome();
+  setUserName(n);goHowTo();
 }
-function skipUserName(){setUserName('—');renderHome();}
+function skipUserName(){setUserName('—');goHowTo();}
+function goHowTo(){showScreen('howto');renderHowTo()}
+function renderHowTo(){
+  const el=document.getElementById('howtoStage');if(!el)return;
+  el.innerHTML=
+    '<div style="text-align:center;margin-bottom:18px"><div style="font-family:\'Fraunces\',serif;font-size:24px;font-weight:600">❓ Cómo funciona Pedrolingo</div></div>'+
+    '<div class="howtoItem"><div class="howtoIc">💾</div><div><div class="howtoT">Tu progreso se guarda en este dispositivo</div><div class="howtoD">No hay cuentas ni contraseñas. Todo lo que practicas se guarda automáticamente en este navegador/dispositivo, solo para ti. Si abres la app en otro dispositivo, empieza limpio — no se mezcla con el de nadie más.</div></div></div>'+
+    '<div class="howtoItem"><div class="howtoIc">🗺️</div><div><div class="howtoT">Niveles</div><div class="howtoD">Tu ruta paso a paso, de lo más básico a lo más avanzado. Vas desbloqueando niveles a medida que dominas el anterior.</div></div></div>'+
+    '<div class="howtoItem"><div class="howtoIc">🎓</div><div><div class="howtoT">Mis clases</div><div class="howtoD">Aquí va apareciendo justo lo que se ve en cada clase con el profesor: vocabulario, verbos y frases, organizados por temática para practicarlos por separado.</div></div></div>'+
+    '<div class="howtoItem"><div class="howtoIc">🎯</div><div><div class="howtoT">Practicar / Repaso del día</div><div class="howtoD">La app usa repetición espaciada: te vuelve a preguntar una palabra justo antes de que se te olvide. Si en el Inicio aparece "Repaso del día", hazlo siempre antes que cualquier otra cosa — es lo que de verdad hace que no se te olvide.</div></div></div>'+
+    '<div class="howtoItem"><div class="howtoIc">✅</div><div><div class="howtoT">Verde = ya lo dominas</div><div class="howtoD">Cuando una palabra aparece marcada en verde con un check, es que ya la tienes asimilada. El sistema sube la dificultad poco a poco: primero tarjetas, luego test, y al final te pide escribirla de memoria.</div></div></div>'+
+    '<div class="howtoItem"><div class="howtoIc">⚠️</div><div><div class="howtoT">"a revisar" y notas con ⚠️ / 🌱</div><div class="howtoD">Algunas palabras están marcadas como "a revisar" porque son conjugaciones deducidas por regla, no 100% confirmadas todavía. Las notas con ⚠️ avisan de palabras con más de una forma válida (dialectos distintos); las 🌱 explican de qué verbo o raíz viene una palabra.</div></div></div>'+
+    '<div class="howtoItem"><div class="howtoIc">🔗</div><div><div class="howtoT">Sincronizar entre tus dispositivos (opcional)</div><div class="howtoD">Si quieres tener el mismo progreso en el móvil y el ordenador, en "Ver mi progreso" puedes poner un código y vincular tus dispositivos. <b>Eso sí junta el progreso</b> — así que solo pon el mismo código en dispositivos que sean tuyos, nunca en el de otra persona.</div></div></div>'+
+    '<button class="start" style="margin-top:10px" onclick="goHome()">Entendido, ¡vamos allá! →</button>';
+}
 function renderHome(){
   renderStreak();
   renderDailyPhrase();
