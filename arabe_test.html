@@ -910,6 +910,7 @@
     Tu progreso, racha y repasos se guardan en este dispositivo.<br>
     <span class="kbd">espacio</span> voltea · <span class="kbd">1·2·3</span> califica · <span class="kbd">S</span> escucha · Confirma las grafías dudosas con tu profe.<br>
     <span style="opacity:.5;font-size:10px">build 2026-06-28-01 (construir frases + progreso)</span>
+    <span style="opacity:.25;font-size:10px;cursor:pointer" onclick="goInbox()"> · </span>
   </footer>
 </div>
 
@@ -3343,6 +3344,7 @@ try{recordSnapshot()}catch(e){console.error('recordSnapshot falló al arrancar:'
 try{initSync()}catch(e){console.error('initSync falló al arrancar:',e)}
 try{
   if(location.hash==='#buzon')goInbox();else goHome();
+  window.addEventListener('hashchange',()=>{if(location.hash==='#buzon')goInbox()});
 }catch(e){console.error('goHome falló al arrancar:',e)}
 // Red de seguridad por fuerza bruta: en algunos navegadores el contenido del home
 // no se pinta en la primerísima carga aunque ya esté generado correctamente.
