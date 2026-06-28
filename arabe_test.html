@@ -842,6 +842,12 @@
     <div id="mistakesStage"></div>
   </div>
 
+  <!-- BUZON (solo para Pedro, acceso por #buzon) -->
+  <div id="inbox" style="display:none">
+    <button class="backHome" onclick="goHome()">← Inicio</button>
+    <div id="inboxStage"></div>
+  </div>
+
   <!-- CONTACTO / SUGERIR CONTENIDO -->
   <div id="contact" style="display:none">
     <button class="backHome" onclick="goHome()">← Inicio</button>
@@ -1366,7 +1372,7 @@ function renderStreak(){const s=loadStreak();const b=document.getElementById('st
 }
 
 /* ---------- NAV ---------- */
-function hideAll(){const w=document.querySelector('.wrap');if(w)w.classList.remove('wide');['home','explore','setup','dictSetup','conjSetup','dialogs','levels','levelStudy','lbkw','verbStudy','verbFlash','verbMatch','stories','storyRead','build','verbs','numhora','study','clases','claseDetail','synonyms','mistakes','howto','contact'].forEach(id=>document.getElementById(id).style.display='none');window.scrollTo(0,0)}
+function hideAll(){const w=document.querySelector('.wrap');if(w)w.classList.remove('wide');['home','explore','setup','dictSetup','conjSetup','dialogs','levels','levelStudy','lbkw','verbStudy','verbFlash','verbMatch','stories','storyRead','build','verbs','numhora','study','clases','claseDetail','synonyms','mistakes','howto','contact','inbox'].forEach(id=>document.getElementById(id).style.display='none');window.scrollTo(0,0)}
 // Cambia de pantalla y fuerza un repintado real del documento entero (no solo del elemento),
 // porque en algunos navegadores el contenido inyectado tras un cambio de pantalla no se
 // pinta hasta que algo más fuerza un recálculo visual.
@@ -1473,6 +1479,29 @@ function saveUserName(){
 }
 function skipUserName(){setUserName('—');goHowTo();}
 /* ---------- CONTACTO / SUGERIR CONTENIDO ---------- */
+/* ---------- BUZÓN (lectura de sugerencias, acceso por #buzon) ---------- */
+function goInbox(){
+  showScreen('inbox');
+  const el=document.getElementById('inboxStage');
+  el.innerHTML='<div style="text-align:center;color:#9DB0B8;padding:30px 0">Cargando…</div>';
+  if(!syncReady||!fbDb){setTimeout(goInbox,800);return}
+  fbDb.collection('pedrolingo_sugerencias').orderBy('createdAt','desc').limit(50).get().then(snap=>{
+    if(snap.empty){el.innerHTML='<div style="text-align:center;margin-bottom:14px"><div style="font-family:\'Fraunces\',serif;font-size:24px;font-weight:600">📬 Buzón</div></div><div style="text-align:center;color:#9DB0B8;padding:30px 0">Aún no ha llegado nada.</div>';return}
+    let h='<div style="text-align:center;margin-bottom:16px"><div style="font-family:\'Fraunces\',serif;font-size:24px;font-weight:600">📬 Buzón</div><div style="font-size:13px;color:#5A6B73;margin-top:4px">'+snap.size+' mensaje'+(snap.size!=1?'s':'')+'</div></div>';
+    snap.forEach(doc=>{
+      const d=doc.data();
+      const fecha=d.createdAt?new Date(d.createdAt).toLocaleString():'';
+      h+='<div class="howtoItem" style="flex-direction:column;align-items:stretch">';
+      h+='<div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9DB0B8;margin-bottom:6px"><b style="color:var(--ink)">'+(d.de||'Alguien')+'</b><span>'+fecha+'</span></div>';
+      if(d.mensaje)h+='<div style="font-size:13.5px;margin-bottom:8px;white-space:pre-wrap">'+d.mensaje+'</div>';
+      if(d.foto)h+='<img src="'+d.foto+'" style="max-width:100%;border-radius:10px;border:1px solid var(--line)">';
+      if(d.archivo)h+='<a href="'+d.archivo+'" download="'+(d.archivoNombre||'archivo')+'" class="mini">⬇️ Descargar '+(d.archivoNombre||'archivo')+'</a>';
+      h+='</div>';
+    });
+    el.innerHTML=h;
+  }).catch(e=>{el.innerHTML='<div style="text-align:center;color:#C0392B;padding:30px 0">No se pudo cargar el buzón: '+e.message+'</div>'});
+}
+
 function goContact(){showScreen('contact');renderContact()}
 function renderContact(){
   const el=document.getElementById('contactStage');if(!el)return;
@@ -3312,7 +3341,9 @@ function showNumberRef(){
 
 try{recordSnapshot()}catch(e){console.error('recordSnapshot falló al arrancar:',e)}
 try{initSync()}catch(e){console.error('initSync falló al arrancar:',e)}
-try{goHome()}catch(e){console.error('goHome falló al arrancar:',e)}
+try{
+  if(location.hash==='#buzon')goInbox();else goHome();
+}catch(e){console.error('goHome falló al arrancar:',e)}
 // Red de seguridad por fuerza bruta: en algunos navegadores el contenido del home
 // no se pinta en la primerísima carga aunque ya esté generado correctamente.
 // En vez de adivinar la causa exacta, repintamos el home varias veces durante
