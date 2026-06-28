@@ -610,6 +610,7 @@
   <!-- HOME -->
   <div id="home">
     <!-- saludo minimal -->
+    <div id="namePrompt"></div>
     <div class="greet" id="greet"></div>
     <!-- acción protagonista (continúa donde lo dejaste) -->
     <div id="primaryAction"></div>
@@ -1433,13 +1434,35 @@ function renderDailyPhrase(){
     '<button class="miniSpeak" style="margin-top:6px" onclick="event.stopPropagation();speak(\''+arS+'\')">🔊</button>'+
     '</div>';
 }
+const UNKEY='pedrolingo_username';
+function getUserName(){try{const n=localStorage.getItem(UNKEY)||'';return n==='—'?'':n}catch(e){return ''}}
+function hasAskedName(){try{return !!localStorage.getItem(UNKEY)}catch(e){return false}}
+function setUserName(n){try{localStorage.setItem(UNKEY,n);queuePush()}catch(e){}}
+function renderNamePrompt(){
+  const el=document.getElementById('namePrompt');if(!el)return;
+  if(hasAskedName()){el.innerHTML='';return}
+  el.innerHTML='<div class="dailyCard" style="cursor:default;text-align:left">'+
+    '<div style="font-size:13.5px;margin-bottom:8px">👋 ¡Bienvenido a Pedrolingo! ¿Cómo te llamas?</div>'+
+    '<input class="winput" id="nameInput" placeholder="Tu nombre" autocomplete="off" style="margin-bottom:8px;width:100%">'+
+    '<div style="display:flex;gap:8px"><button class="start" style="margin:0;flex:1" onclick="saveUserName()">Empezar</button><button class="mini" onclick="skipUserName()">Saltar</button></div>'+
+    '<div style="font-size:10.5px;color:#9DB0B8;margin-top:8px">Tu progreso se guarda solo en este dispositivo — si un amigo abre el mismo enlace en el suyo, el suyo no se mezcla con el tuyo.</div>'+
+    '</div>';
+}
+function saveUserName(){
+  const inp=document.getElementById('nameInput');if(!inp)return;
+  const n=inp.value.trim();if(!n)return;
+  setUserName(n);renderHome();
+}
+function skipUserName(){setUserName('—');renderHome();}
 function renderHome(){
   renderStreak();
   renderDailyPhrase();
+  renderNamePrompt();
   const due=dueWords();const p=loadProg();const started=Object.keys(p).length>0;
   // saludo según hora
   const h=new Date().getHours();
-  const saludo = h<6?'Buenas noches':h<14?'Ahlan, buenos días':h<21?'Buenas tardes':'Buenas noches';
+  const uname=getUserName();
+  const saludo = (h<6?'Buenas noches':h<14?'Ahlan, buenos días':h<21?'Buenas tardes':'Buenas noches')+(uname?', '+uname:'');
   document.getElementById('greet').innerHTML='<div class="g-hi">'+saludo+'</div><div class="g-sub">'+(due.length>0?'Tienes repaso preparado para hoy.':started?'Listo para seguir aprendiendo.':'Empecemos con tu árabe.')+'</div>';
   // acción protagonista
   const pa=document.getElementById('primaryAction');
