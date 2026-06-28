@@ -1385,13 +1385,14 @@ function renderProgressChart(){
   const last=dates.slice(-14);
   const vals=last.map(d=>snaps[d]);
   const max=Math.max(...vals,1),min=Math.min(...vals);
-  const W=300,H=90,pad=8;
-  const stepX=last.length>1?(W-2*pad)/(last.length-1):0;
+  const W=300,H=90,pad=8,padL=20;
+  const stepX=last.length>1?(W-padL-pad)/(last.length-1):0;
   const scaleY=v=>{if(max===min)return H/2;return H-pad-((v-min)/(max-min))*(H-2*pad)};
-  let pts=last.map((d,i)=>(pad+i*stepX)+','+scaleY(vals[i]));
+  let pts=last.map((d,i)=>(padL+i*stepX)+','+scaleY(vals[i]));
   let path='M'+pts.join(' L');
-  let dots=last.map((d,i)=>'<circle cx="'+(pad+i*stepX)+'" cy="'+scaleY(vals[i])+'" r="2.6" fill="var(--clay)"></circle>').join('');
-  const svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:90px" preserveAspectRatio="none"><path d="'+path+'" fill="none" stroke="var(--clay)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"></path>'+dots+'</svg>';
+  let dots=last.map((d,i)=>'<circle cx="'+(padL+i*stepX)+'" cy="'+scaleY(vals[i])+'" r="2.6" fill="var(--clay)"></circle>').join('');
+  const yLabels='<text x="0" y="'+(scaleY(max)+3)+'" font-size="9" fill="#9DB0B8">'+max+'</text>'+(max!==min?'<text x="0" y="'+(scaleY(min)+3)+'" font-size="9" fill="#9DB0B8">'+min+'</text>':'');
+  const svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:90px" preserveAspectRatio="none"><path d="'+path+'" fill="none" stroke="var(--clay)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"></path>'+dots+yLabels+'</svg>';
   const first=vals[0],lastV=vals[vals.length-1],diff=lastV-first;
   return '<div class="progpanel"><h3>Progreso en el tiempo</h3>'+svg+'<div style="display:flex;justify-content:space-between;font-size:11px;color:#9DB0B8;margin-top:2px"><span>'+fmtDateShort(last[0])+'</span><span>'+fmtDateShort(last[last.length-1])+'</span></div><div style="text-align:center;font-size:13px;color:#5A6B73;margin-top:8px">'+lastV+' dominadas'+(diff>0?' · <span style="color:var(--ok);font-weight:700">+'+diff+'</span> en este periodo':'')+'</div></div>';
 }
