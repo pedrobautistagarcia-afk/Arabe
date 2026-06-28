@@ -542,7 +542,8 @@
   .build-slot{min-height:56px;background:var(--paper);border:2px dashed var(--line);border-radius:14px;padding:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin-bottom:18px}
   .build-slot.filled{border-style:solid;border-color:var(--ok)}
   .build-bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:18px}
-  .wchip{background:var(--paper);border:1.5px solid var(--line);border-radius:11px;padding:11px 16px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--ink);transition:.12s;direction:rtl}
+  .wchip{background:var(--paper);border:1.5px solid var(--line);border-radius:11px;padding:9px 16px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--ink);transition:.12s;direction:rtl;display:inline-flex;flex-direction:column;align-items:center;gap:2px;line-height:1.2}
+  .wchip-tr{font-size:10px;font-weight:500;color:#9DB0B8;direction:ltr;text-transform:lowercase}
   .wchip:hover{border-color:var(--clay);transform:translateY(-1px)}
   .wchip.used{opacity:.3;pointer-events:none}
   .wchip.inslot{background:#E0F2F1;border-color:var(--ok)}
@@ -1480,6 +1481,7 @@ function renderProgDetail(){
     html+='<div class="progpanel"><h3>Sincronizar entre dispositivos</h3><div style="font-size:12px;color:#C0392B">Hubo un problema mostrando este panel. Cierra "Ver mi progreso" y vuelve a abrirlo.</div></div>';
   }
   cont.innerHTML=html;
+  void cont.offsetHeight; // fuerza un repintado real (algunos navegadores no pintan solos el contenido inyectado en la primera carga)
   try{renderSyncBadge()}catch(e){}
 }
 
@@ -2208,13 +2210,21 @@ function renderBuild(){
   const f=buildDeck[buildIdx];
   // palabras en árabe, desordenadas
   const words=f.ar.split(/\s+/).filter(Boolean);
+  // transcripción palabra por palabra, SOLO si el número de trozos coincide con el árabe
+  // (si no coincide, no la inventamos: mostramos solo la transcripción completa de la frase)
+  const trWords=(f.tr||'').split(/\s+/).filter(Boolean);
+  const trAligned = trWords.length===words.length ? trWords : null;
   buildSlot=[];
   const shuffled=shuffle(words.map((w,i)=>({w,i})));
-  let bank='';shuffled.forEach((o,idx)=>{bank+='<button class="wchip" data-w="'+o.i+'" onclick="pickWord(this,'+o.i+',\''+o.w.replace(/'/g,"")+'\')">'+o.w+'</button>';});
+  let bank='';shuffled.forEach((o,idx)=>{
+    const trw=trAligned?trAligned[o.i]:null;
+    bank+='<button class="wchip" data-w="'+o.i+'" onclick="pickWord(this,'+o.i+',\''+o.w.replace(/'/g,"")+'\')"><span>'+o.w+'</span>'+(trw?'<span class="wchip-tr">'+trw+'</span>':'')+'</button>';
+  });
   stage.innerHTML='<div class="buildwrap">'+
     '<div style="text-align:center;font-size:12px;color:#9DB0B8;font-weight:700">FRASE '+(buildIdx+1)+' / '+buildDeck.length+'</div>'+
     '<div class="build-es">«'+f.es+'»</div>'+
-    '<div class="build-hint">Toca las palabras en el orden correcto</div>'+
+    '<div class="build-hint">Toca las palabras en el orden correcto'+(trAligned?'':' · ')+'</div>'+
+    (trAligned?'':'<div style="text-align:center;font-size:11px;color:#9DB0B8;margin-top:-6px">'+(f.tr||'')+'</div>')+
     '<div class="build-slot" id="buildSlotEl"></div>'+
     '<div class="build-bank" id="buildBank">'+bank+'</div>'+
     '<div class="build-fb" id="buildFb"></div>'+
@@ -2223,8 +2233,9 @@ function renderBuild(){
 }
 function pickWord(btn,origIdx,word){
   if(btn.classList.contains('used'))return;
+  const tr=btn.querySelector('.wchip-tr');
   btn.classList.add('used');
-  buildSlot.push({origIdx,word,btn});
+  buildSlot.push({origIdx,word,btn,tr:tr?tr.textContent:null});
   renderSlot();
   // si está completo, comprobar
   const total=buildDeck[buildIdx].ar.split(/\s+/).filter(Boolean).length;
@@ -2232,7 +2243,7 @@ function pickWord(btn,origIdx,word){
 }
 function renderSlot(){
   const el=document.getElementById('buildSlotEl');
-  el.innerHTML=buildSlot.map((s,i)=>'<button class="wchip inslot" onclick="unpick('+i+')">'+s.word+'</button>').join('');
+  el.innerHTML=buildSlot.map((s,i)=>'<button class="wchip inslot" onclick="unpick('+i+')"><span>'+s.word+'</span>'+(s.tr?'<span class="wchip-tr">'+s.tr+'</span>':'')+'</button>').join('');
   el.classList.toggle('filled',buildSlot.length>0);
 }
 function unpick(i){
@@ -2987,6 +2998,15 @@ function showNumberRef(){
 recordSnapshot();
 initSync();
 goHome();
+// Red de seguridad: algunos navegadores no pintan bien el contenido inyectado por JS
+// en la primerísima carga (se queda "oculto" hasta el primer cambio de pantalla).
+// Forzamos un repintado real del documento poco después de cargar.
+requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  void document.body.offsetHeight;
+  document.body.style.display='none';
+  void document.body.offsetHeight;
+  document.body.style.display='';
+}));
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('sw.js').catch(()=>{});
