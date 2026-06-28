@@ -1559,7 +1559,7 @@ function sendSuggestion(){
       statusEl.textContent='✅ ¡Enviado! Gracias.';
       msgEl.value='';fileEl.value='';document.getElementById('ctFileName').textContent='';
       document.getElementById('ctSendBtn').disabled=false;
-    }).catch(()=>{statusEl.textContent='⚠️ No se pudo enviar, prueba otra vez.';document.getElementById('ctSendBtn').disabled=false});
+    }).catch(err=>{statusEl.textContent='⚠️ No se pudo enviar: '+(err&&err.message?err.message:err)+' (código: '+(err&&err.code?err.code:'?')+')';document.getElementById('ctSendBtn').disabled=false});
   };
   if(file&&file.type.startsWith('image/')){
     resizeImageToBase64(file,1000,0.55).then(b64=>{
