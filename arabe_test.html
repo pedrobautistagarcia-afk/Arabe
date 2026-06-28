@@ -1014,8 +1014,14 @@ function mergeSnapshots(localStr,cloudStr){
   return out;
 }
 function mergeEdits(localStr,cloudStr){
-  const local=safeParse(localStr,{}),cloud=safeParse(cloudStr,{});
-  return {...cloud,...local}; // si hay conflicto en la misma palabra, gana la edición de este dispositivo (la más probable de ser la reciente)
+  const localRaw=safeParse(localStr,{}),cloudRaw=safeParse(cloudStr,{});
+  const local={edits:(localRaw&&typeof localRaw.edits==='object')?localRaw.edits:{},added:Array.isArray(localRaw&&localRaw.added)?localRaw.added:[]};
+  const cloud={edits:(cloudRaw&&typeof cloudRaw.edits==='object')?cloudRaw.edits:{},added:Array.isArray(cloudRaw&&cloudRaw.added)?cloudRaw.added:[]};
+  const edits={...cloud.edits,...local.edits}; // si hay conflicto en la misma palabra, gana la edición de este dispositivo (la más probable de ser la reciente)
+  const addedKeys=new Set();
+  const added=[];
+  [...cloud.added,...local.added].forEach(w=>{const k=(w&&(w.tr||'')+'|'+(w&&w.es||''));if(!addedKeys.has(k)){addedKeys.add(k);added.push(w)}});
+  return {edits,added};
 }
 function computeStreakFromDays(days){
   const uniq=Array.from(new Set(days));
@@ -2587,11 +2593,18 @@ function buildPhrasePool(){
     if(w.cat==='frase'&&w.ar&&w.es)ALLPHRASES.push({ar:w.ar,tr:w.tr,es:w.es});
   }));
 }
-buildPhrasePool();
+try{buildPhrasePool()}catch(e){console.error('buildPhrasePool falló al arrancar:',e)}
 
 // ===== EDICIONES DEL USUARIO (correcciones + palabras nuevas) =====
 const EKEY='pedrolingo_edits_v1';
-function loadEdits(){try{return JSON.parse(localStorage.getItem(EKEY))||{edits:{},added:[]}}catch(e){return {edits:{},added:[]}}}
+function loadEdits(){
+  let e;
+  try{e=JSON.parse(localStorage.getItem(EKEY))}catch(err){e=null}
+  if(!e||typeof e!=='object')e={};
+  if(!e.edits||typeof e.edits!=='object')e.edits={};
+  if(!Array.isArray(e.added))e.added=[];
+  return e;
+}
 function saveEdits(e){try{localStorage.setItem(EKEY,JSON.stringify(e));queuePush()}catch(e){}}
 function editKey(w){return (w._origtr||w.tr)+'|'+(w._origes||w.es);}
 function applyEdits(){
@@ -2617,7 +2630,7 @@ function applyEdits(){
     }
   });
 }
-applyEdits();
+try{applyEdits()}catch(e){console.error('applyEdits falló al arrancar:',e)}
 
 
 
@@ -3056,9 +3069,9 @@ function showNumberRef(){
   stage.innerHTML=h;
 }
 
-recordSnapshot();
-initSync();
-goHome();
+try{recordSnapshot()}catch(e){console.error('recordSnapshot falló al arrancar:',e)}
+try{initSync()}catch(e){console.error('initSync falló al arrancar:',e)}
+try{goHome()}catch(e){console.error('goHome falló al arrancar:',e)}
 // Red de seguridad por fuerza bruta: en algunos navegadores el contenido del home
 // no se pinta en la primerísima carga aunque ya esté generado correctamente.
 // En vez de adivinar la causa exacta, repintamos el home varias veces durante
