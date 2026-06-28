@@ -1273,7 +1273,7 @@ function startLevelTest(L){
   pool.forEach(w=>delete w._w);
   deck=pool.map(w=>{let d=Math.random()<.5?'es2ar':'ar2es';return{w,d,m:'quiz'}});
   idx=0;score={ok:0,mid:0,no:0};
-  hideAll();(()=>{const sEl=document.getElementById('study');sEl.style.display='block';void sEl.offsetHeight;})();render();
+  hideAll();showScreen('study');render();
 }
 
 /* ---------- STREAK ---------- */
@@ -1302,6 +1302,17 @@ function renderStreak(){const s=loadStreak();const b=document.getElementById('st
 
 /* ---------- NAV ---------- */
 function hideAll(){const w=document.querySelector('.wrap');if(w)w.classList.remove('wide');['home','explore','setup','dictSetup','conjSetup','dialogs','levels','levelStudy','lbkw','verbStudy','verbFlash','verbMatch','stories','storyRead','build','verbs','numhora','study','clases','claseDetail','synonyms'].forEach(id=>document.getElementById(id).style.display='none')}
+// Cambia de pantalla y fuerza un repintado real del documento entero (no solo del elemento),
+// porque en algunos navegadores el contenido inyectado tras un cambio de pantalla no se
+// pinta hasta que algo más fuerza un recálculo visual.
+function showScreen(id){
+  hideAll();
+  const el=document.getElementById(id);
+  if(el)el.style.display='block';
+  document.body.style.display='none';
+  void document.body.offsetHeight;
+  document.body.style.display='';
+}
 function goHome(){curLevel=null;hideAll();document.getElementById('home').style.display='block';if('speechSynthesis' in window)speechSynthesis.cancel();renderHome()}
 function goExplore(){hideAll();document.getElementById('explore').style.display='block';renderExplore()}
 function goPractice(){hideAll();document.getElementById('setup').style.display='block';globalStat();updateMeta()}
@@ -1506,7 +1517,7 @@ function renderProgDetail(){
 /* ---------- SRS ---------- */
 function startSRS(){const due=dueWords();if(due.length===0)return;sessionType='srs';claseSessionN=null;claseSessionTopic=null;claseSessionCat=null;shuffle(due);
   deck=due.slice(0,20).map(w=>{let d=Math.random()<.5?'es2ar':'ar2es';let m=pickModeFor(w);return{w,d,m}});
-  idx=0;score={ok:0,mid:0,no:0};hideAll();(()=>{const sEl=document.getElementById('study');sEl.style.display='block';void sEl.offsetHeight;})();render()}
+  idx=0;score={ok:0,mid:0,no:0};hideAll();showScreen('study');render()}
 
 /* ---------- EXPLORE ---------- */
 let expFilter='all', expQuery='', openTopics=new Set();
@@ -1596,7 +1607,7 @@ function pickModeFor(w){
 /* ---------- ENGINE (vocab practice) ---------- */
 function start(){sessionType='practice';claseSessionN=null;claseSessionTopic=null;claseSessionCat=null;let pool=[];sel.forEach(t=>VOCAB[t].forEach(w=>pool.push({...w,topic:t})));shuffle(pool);if(len>0)pool=pool.slice(0,len);
   deck=pool.map(w=>{let d=dir;if(d==='both')d=Math.random()<.5?'es2ar':'ar2es';let m=mode;if(m==='mix')m=pickModeFor(w);return{w,d,m}});
-  idx=0;score={ok:0,mid:0,no:0};hideAll();(()=>{const sEl=document.getElementById('study');sEl.style.display='block';void sEl.offsetHeight;})();render()}
+  idx=0;score={ok:0,mid:0,no:0};hideAll();showScreen('study');render()}
 
 function startFocus(){
   // Práctica enfocada: prioriza lo que fallas y lo que toca repasar.
@@ -1617,7 +1628,7 @@ function startFocus(){
   let pool=[...weak,...dueP,...fresh].slice(0,15);
   if(pool.length===0){alert('¡No tienes nada pendiente! Practica un tema para empezar.');return;}
   deck=pool.map(w=>{let d=Math.random()<.5?'es2ar':'ar2es';let m=pickModeFor(w);return{w,d,m}});
-  idx=0;score={ok:0,mid:0,no:0};hideAll();(()=>{const sEl=document.getElementById('study');sEl.style.display='block';void sEl.offsetHeight;})();render();
+  idx=0;score={ok:0,mid:0,no:0};hideAll();showScreen('study');render();
 }
 
 function quit(){if('speechSynthesis' in window)speechSynthesis.cancel();goHome()}
@@ -1746,7 +1757,7 @@ function renderWrite(w,d){const qAr=isArPrompt(d);const stage=document.getElemen
 
 /* ---------- DICTADO ENGINE ---------- */
 function startDictado(){sessionType='dictado';claseSessionN=null;claseSessionTopic=null;claseSessionCat=null;let pool=[];dictSel.forEach(t=>VOCAB[t].forEach(w=>{if(w.ar)pool.push({...w,topic:t})}));shuffle(pool);pool=pool.slice(0,dictLen);
-  deck=pool.map(w=>({w}));idx=0;score={ok:0,mid:0,no:0};hideAll();(()=>{const sEl=document.getElementById('study');sEl.style.display='block';void sEl.offsetHeight;})();render()}
+  deck=pool.map(w=>({w}));idx=0;score={ok:0,mid:0,no:0};hideAll();showScreen('study');render()}
 function renderDict(item){const w=item.w;const stage=document.getElementById('stage');const arS=sayAr(w).replace(/'/g,"\\'");
   stage.innerHTML='<div class="dicthint">Pulsa para escuchar las veces que necesites</div>'+
     '<button class="dictbig" onclick="speak(\''+arS+'\')">🔊</button>'+
@@ -1772,7 +1783,7 @@ function startConjug(){
   sessionType='conjug';claseSessionN=null;claseSessionTopic=null;claseSessionCat=null;let pool=[];
   conjSel.forEach(vi=>{const v=CONJUG.verbs[vi];PRONS.forEach(pr=>{pool.push({v,pr})})});
   shuffle(pool);pool=pool.slice(0,Math.min(pool.length,24));
-  deck=pool.map(x=>x);idx=0;score={ok:0,mid:0,no:0};hideAll();(()=>{const sEl=document.getElementById('study');sEl.style.display='block';void sEl.offsetHeight;})();render()}
+  deck=pool.map(x=>x);idx=0;score={ok:0,mid:0,no:0};hideAll();showScreen('study');render()}
 function renderConj(item){const {v,pr}=item;const correct=v.forms[pr][0];const stage=document.getElementById('stage');
   // distractores: otras formas del mismo verbo + alguna de otro
   let pool=PRONS.filter(p=>p!==pr).map(p=>v.forms[p][0]);
@@ -1784,7 +1795,7 @@ function renderConj(item){const {v,pr}=item;const correct=v.forms[pr][0];const s
       if(right&&voiceOn)speak(v.forms[pr][1]);score[right?'ok':'no']++;setTimeout(next,right?800:1600)};ob.appendChild(b)})}
 function showConjTable(){
   // Modo explorar: lista de verbos; al pulsar uno se ve su conjugación
-  hideAll();(()=>{const sEl=document.getElementById('study');sEl.style.display='block';void sEl.offsetHeight;})();
+  hideAll();showScreen('study');
   document.getElementById('counter').textContent='';document.getElementById('pfill').style.width='100%';
   const stage=document.getElementById('stage');
   let html='<div style="margin-bottom:10px;font-size:13px;color:#5A6B73">Pulsa un verbo para ver su conjugación en presente.</div>';
@@ -1809,7 +1820,7 @@ function showConjTable(){
 }
 function showOneVerb(i){
   const v=CONJUG.verbs[i];
-  hideAll();(()=>{const sEl=document.getElementById('study');sEl.style.display='block';void sEl.offsetHeight;})();
+  hideAll();showScreen('study');
   document.getElementById('counter').textContent='';document.getElementById('pfill').style.width='100%';
   const stage=document.getElementById('stage');
   let html='<button class="back" onclick="showConjTable()" style="margin-bottom:10px">← Verbos</button>';
@@ -2029,7 +2040,7 @@ function startClasePracticeVocab(n){
   if(!pool.length)return;
   deck=pool.map(w=>{let d=Math.random()<.5?'es2ar':'ar2es';let m=pickModeFor(w);return{w,d,m}});
   idx=0;score={ok:0,mid:0,no:0};
-  hideAll();(()=>{const sEl=document.getElementById('study');sEl.style.display='block';void sEl.offsetHeight;})();render();
+  hideAll();showScreen('study');render();
 }
 function startClasePracticeFrases(n){
   sessionType='practice';curLevel=null;claseSessionN=n;claseSessionTopic=null;claseSessionCat='frase';
@@ -2038,12 +2049,11 @@ function startClasePracticeFrases(n){
   if(!pool.length)return;
   deck=pool.map(w=>{let d=Math.random()<.5?'es2ar':'ar2es';let m=pickModeFor(w);return{w,d,m}});
   idx=0;score={ok:0,mid:0,no:0};
-  hideAll();(()=>{const sEl=document.getElementById('study');sEl.style.display='block';void sEl.offsetHeight;})();render();
+  hideAll();showScreen('study');render();
 }
 function openClase(n){
-  hideAll();
+  showScreen('claseDetail');
   const w=document.querySelector('.wrap');if(w)w.classList.add('wide');
-  (()=>{const cEl=document.getElementById('claseDetail');cEl.style.display='block';void cEl.offsetHeight;})();
   const m=CLASES.meta[String(n)];
   const verbs=getClaseVerbs(n),words=getClaseWords(n);
   const byTopic={};
@@ -2227,7 +2237,7 @@ function startLevel(L){
   if(pool.length>15)pool=pool.slice(0,15); // sesiones de 15 para no agobiar
   deck=pool.map(w=>{let d=Math.random()<.5?'es2ar':'ar2es';let m=pickModeFor(w);return{w,d,m}});
   idx=0;score={ok:0,mid:0,no:0};
-  hideAll();(()=>{const sEl=document.getElementById('study');sEl.style.display='block';void sEl.offsetHeight;})();render();
+  hideAll();showScreen('study');render();
 }
 
 
@@ -2350,7 +2360,7 @@ function renderVerbStudyTable(){
   h+='</tbody></table></div>';
   holder.innerHTML=h;
 }
-function goVerbs(){hideAll();const vEl=document.getElementById('verbs');vEl.style.display='block';void vEl.offsetHeight;renderVerbs();}
+function goVerbs(){showScreen('verbs');renderVerbs();}
 
 /* ---------- TARJETAS DE REPASO DE VERBOS ---------- */
 function openVerbFlash(ess){
@@ -2642,7 +2652,7 @@ function startClaseTopicVerbs(n,topic){
   let exercises=buildVerbExercises(verbs);
   shuffle(exercises);
   vpDeck=exercises.slice(0,15);vpIdx=0;vpScore=0;
-  hideAll();const vEl=document.getElementById('verbs');vEl.style.display='block';void vEl.offsetHeight;
+  showScreen('verbs');
   renderVerbPractice();
 }
 function startVerbsForClase(n){
@@ -2652,7 +2662,7 @@ function startVerbsForClase(n){
   let exercises=buildVerbExercises(verbs);
   shuffle(exercises);
   vpDeck=exercises.slice(0,24);vpIdx=0;vpScore=0;
-  hideAll();const vEl=document.getElementById('verbs');vEl.style.display='block';void vEl.offsetHeight;
+  showScreen('verbs');
   renderVerbPractice();
 }
 // Reordena un grupo de palabras dejando primero lo corto (sustantivos/adjetivos)
@@ -2669,7 +2679,7 @@ function startClaseTopicVocab(n,topic){
   if(!pool.length)return;
   deck=pool.map(w=>{let d=Math.random()<.5?'es2ar':'ar2es';let m=pickModeFor(w);return{w,d,m}});
   idx=0;score={ok:0,mid:0,no:0};
-  hideAll();(()=>{const sEl=document.getElementById('study');sEl.style.display='block';void sEl.offsetHeight;})();render();
+  hideAll();showScreen('study');render();
 }
 function startClaseTopicFrases(n,topic){
   sessionType='practice';curLevel=null;claseSessionN=n;claseSessionTopic=topic;claseSessionCat='frase';
@@ -2678,7 +2688,7 @@ function startClaseTopicFrases(n,topic){
   if(!pool.length)return;
   deck=pool.map(w=>{let d=Math.random()<.5?'es2ar':'ar2es';let m=pickModeFor(w);return{w,d,m}});
   idx=0;score={ok:0,mid:0,no:0};
-  hideAll();(()=>{const sEl=document.getElementById('study');sEl.style.display='block';void sEl.offsetHeight;})();render();
+  hideAll();showScreen('study');render();
 }
 function startVerbPractice(catFilter){
   vpMode='cat';vpCategory=catFilter||null;
@@ -2686,7 +2696,7 @@ function startVerbPractice(catFilter){
   let exercises=buildVerbExercises(verbs);
   shuffle(exercises);
   vpDeck=exercises.slice(0,15);vpIdx=0;vpScore=0;
-  hideAll();const vEl=document.getElementById('verbs');vEl.style.display='block';void vEl.offsetHeight;
+  showScreen('verbs');
   renderVerbPractice();
 }
 function renderVerbPractice(){
