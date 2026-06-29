@@ -397,6 +397,7 @@
   .oddCard:disabled{cursor:default}
   .oddAr{font-family:'Noto Naskh Arabic',serif;font-size:19px;direction:rtl;margin-bottom:5px}
   .oddEs{font-size:12px;color:#5A6B73}
+  .oddCard.selected{border-color:var(--clay);box-shadow:0 0 0 2px rgba(63,111,109,.15)}
   .oddCard.oddCorrect{background:#E8F6F2;border-color:var(--ok)}
   .oddCard.oddWrong{background:#FBEAEA;border-color:#E0685F}
   .matchCol{display:flex;flex-direction:column;gap:8px}
@@ -2794,9 +2795,10 @@ function wmPick(side,id){
 }
 
 /* ---------- LA QUE NO PEGA (odd one out, por tema) ---------- */
-let ogOptions=[],ogBack=null,ogTopicLabel='';
+let ogOptions=[],ogBack=null,ogTopicLabel='',ogSelected=null,ogChecked=false;
 function startOddGame(backFn){
   ogBack=backFn||goHome;
+  ogSelected=null;ogChecked=false;
   const byTopic={};
   TOPICS.forEach(t=>{(VOCAB[t]||[]).forEach(w=>{if(w.es&&w.ar)(byTopic[t]=byTopic[t]||[]).push(w)})});
   const ok=Object.keys(byTopic).filter(t=>byTopic[t].length>=3);
@@ -2815,24 +2817,25 @@ function renderOddGame(){
   const stage=document.getElementById('verbMatchStage');
   let h='<div style="text-align:center;margin-bottom:10px"><div style="font-family:\'Fraunces\',serif;font-size:22px;font-weight:600">🙅 La que no pega</div><div style="font-size:13px;color:#5A6B73;margin-top:4px">3 son del mismo tema, 1 no — ¿cuál es la diferente?</div></div>';
   h+='<div class="oddGrid" id="oddGrid">';
-  ogOptions.forEach((w,i)=>{h+='<button class="oddCard" onclick="oddPick('+i+')"><div class="oddAr">'+w.ar+'</div><div class="oddEs">'+w.es+'</div></button>';});
-  h+='</div><div id="oddResult"></div>';
+  ogOptions.forEach((w,i)=>{
+    let cls='oddCard'+(ogSelected===i&&!ogChecked?' selected':'');
+    if(ogChecked){if(w._odd)cls+=' oddCorrect';else if(ogSelected===i)cls+=' oddWrong';}
+    h+='<button class="'+cls+'" '+(ogChecked?'disabled':'onclick="oddSelect('+i+')"')+'><div class="oddAr">'+w.ar+'</div>'+(ogChecked?'<div class="oddEs">'+w.es+'</div>':'')+'</button>';
+  });
+  h+='</div>';
+  if(!ogChecked){
+    h+='<button class="start" style="margin-top:14px" '+(ogSelected===null?'disabled':'')+' onclick="oddCheck()">Comprobar</button>';
+  }else{
+    const w=ogOptions[ogSelected];
+    const correctWord=ogOptions.find(o=>o._odd);
+    h+='<div style="text-align:center;margin-top:14px;font-size:13.5px;color:'+(w._odd?'var(--ok)':'#C0392B')+'">'+(w._odd?'¡Correcto! Las otras tres eran del tema "'+ogTopicLabel+'"':'No era esa — la diferente era "'+correctWord.es+'"')+'</div>';
+    h+='<button class="start" style="margin-top:10px" onclick="startOddGame(ogBack)">Siguiente →</button>';
+    h+='<button class="back" style="display:block;margin:14px auto 0" onclick="ogBack()">← Volver</button>';
+  }
   stage.innerHTML=h;
 }
-function oddPick(i){
-  const w=ogOptions[i];
-  const cards=document.querySelectorAll('#oddGrid .oddCard');
-  cards.forEach((c,idx)=>{
-    c.disabled=true;
-    if(ogOptions[idx]._odd)c.classList.add('oddCorrect');
-    else if(idx===i)c.classList.add('oddWrong');
-  });
-  const correctWord=ogOptions.find(o=>o._odd);
-  const result=document.getElementById('oddResult');
-  result.innerHTML='<div style="text-align:center;margin-top:16px;font-size:13.5px;color:'+(w._odd?'var(--ok)':'#C0392B')+'">'+(w._odd?'¡Correcto! Las otras tres eran del tema "'+ogTopicLabel+'"':'No era esa — la diferente era "'+correctWord.es+'"')+'</div>'+
-    '<button class="start" style="margin-top:10px" onclick="startOddGame(ogBack)">Otra ronda</button>'+
-    '<button class="back" style="display:block;margin:14px auto 0" onclick="ogBack()">← Volver</button>';
-}
+function oddSelect(i){if(ogChecked)return;ogSelected=i;renderOddGame()}
+function oddCheck(){if(ogSelected===null||ogChecked)return;ogChecked=true;renderOddGame()}
 
 function renderVerbs(){
   const stage=document.getElementById('verbsStage');
