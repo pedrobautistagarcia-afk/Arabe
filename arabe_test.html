@@ -2550,8 +2550,9 @@ function openLevelStudy(L){
 function startLevel(L){
   if(!levelUnlocked(L)){return;}
   sessionType='practice';curLevel=L;claseSessionN=null;claseSessionTopic=null;claseSessionCat=null;inMistakesMode=false;
-  let pool=(LEVELS.levels[String(L)]||[]).slice();
-  shuffle(pool);
+  // Prioriza las palabras que aún no dominas (caja más baja primero); las verdes solo
+  // aparecen si no hay suficientes pendientes para llenar la ronda.
+  let pool=orderByMastery((LEVELS.levels[String(L)]||[]).slice());
   if(pool.length>15)pool=pool.slice(0,15); // sesiones de 15 para no agobiar
   deck=pool.map(w=>{let d=Math.random()<.5?'es2ar':'ar2es';let m=pickModeFor(w);return{w,d,m}});
   idx=0;score={ok:0,mid:0,no:0};
