@@ -1329,10 +1329,14 @@ function saveProg(p){try{localStorage.setItem(PKEY,JSON.stringify(p));queuePush(
 function wordKey(w){return w.tr+'|'+w.es}
 function getRec(w){return loadProg()[wordKey(w)]||null}
 function getStatus(w){const r=getRec(w);return r?r.s:null}
-function updateRec(w,result){const p=loadProg();const k=wordKey(w);const cur=p[k]||{box:0,fails:0};let box=cur.box||0;
+let inMistakesMode=false;
+function updateRec(w,result){const p=loadProg();const k=wordKey(w);const cur=p[k]||{box:0,fails:0,resolved:true};let box=cur.box||0;
   if(result==='ok')box=Math.min(box+1,INTERVALS.length-1);else if(result==='mid')box=Math.max(box,1);else box=0;
   let fails=cur.fails||0;if(result==='no')fails+=2;else if(result==='mid')fails+=1; // los fallos totales pesan más que los "a medias"
-  p[k]={s:result,box:box,due:Date.now()+INTERVALS[box]*DAY,t:Date.now(),fails:fails,es:w.es,ar:w.ar,tr:w.tr};saveProg(p)}
+  let resolved=cur.resolved!==false;
+  if(result==='no'||result==='mid')resolved=false; // vuelve a fallar -> reaparece en Mis fallos
+  else if(result==='ok'&&!inMistakesMode)resolved=true; // solo se quita si la aciertas en su sitio original
+  p[k]={s:result,box:box,due:Date.now()+INTERVALS[box]*DAY,t:Date.now(),fails:fails,resolved:resolved,es:w.es,ar:w.ar,tr:w.tr};saveProg(p)}
 function markKnown(w){const p=loadProg();p[wordKey(w)]={s:'ok',box:INTERVALS.length-1,due:Date.now()+INTERVALS[INTERVALS.length-1]*DAY,t:Date.now()};saveProg(p);renderExplore()}
 function dueWords(){
   const p=loadProg();const now=Date.now();const out=[];
@@ -1790,7 +1794,7 @@ function renderProgDetail(){
 
 
 /* ---------- SRS ---------- */
-function startSRS(){const due=dueWords();if(due.length===0)return;sessionType='srs';claseSessionN=null;claseSessionTopic=null;claseSessionCat=null;shuffle(due);
+function startSRS(){const due=dueWords();if(due.length===0)return;sessionType='srs';claseSessionN=null;claseSessionTopic=null;claseSessionCat=null;inMistakesMode=false;shuffle(due);
   deck=due.slice(0,20).map(w=>{let d=Math.random()<.5?'es2ar':'ar2es';let m=pickModeFor(w);return{w,d,m}});
   idx=0;score={ok:0,mid:0,no:0};hideAll();showScreen('study');render()}
 
@@ -1880,7 +1884,7 @@ function pickModeFor(w){
 }
 
 /* ---------- ENGINE (vocab practice) ---------- */
-function start(){sessionType='practice';claseSessionN=null;claseSessionTopic=null;claseSessionCat=null;let pool=[];sel.forEach(t=>VOCAB[t].forEach(w=>pool.push({...w,topic:t})));shuffle(pool);if(len>0)pool=pool.slice(0,len);
+function start(){sessionType='practice';claseSessionN=null;claseSessionTopic=null;claseSessionCat=null;inMistakesMode=false;let pool=[];sel.forEach(t=>VOCAB[t].forEach(w=>pool.push({...w,topic:t})));shuffle(pool);if(len>0)pool=pool.slice(0,len);
   deck=pool.map(w=>{let d=dir;if(d==='both')d=Math.random()<.5?'es2ar':'ar2es';let m=mode;if(m==='mix')m=pickModeFor(w);return{w,d,m}});
   idx=0;score={ok:0,mid:0,no:0};hideAll();showScreen('study');render()}
 
@@ -2031,7 +2035,7 @@ function renderWrite(w,d){const qAr=isArPrompt(d);const stage=document.getElemen
   document.getElementById('wcheck').onclick=check;inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!inp.disabled)check()})}
 
 /* ---------- DICTADO ENGINE ---------- */
-function startDictado(){sessionType='dictado';claseSessionN=null;claseSessionTopic=null;claseSessionCat=null;let pool=[];dictSel.forEach(t=>VOCAB[t].forEach(w=>{if(w.ar)pool.push({...w,topic:t})}));shuffle(pool);pool=pool.slice(0,dictLen);
+function startDictado(){sessionType='dictado';claseSessionN=null;claseSessionTopic=null;claseSessionCat=null;inMistakesMode=false;let pool=[];dictSel.forEach(t=>VOCAB[t].forEach(w=>{if(w.ar)pool.push({...w,topic:t})}));shuffle(pool);pool=pool.slice(0,dictLen);
   deck=pool.map(w=>({w}));idx=0;score={ok:0,mid:0,no:0};hideAll();showScreen('study');render()}
 function renderDict(item){const w=item.w;const stage=document.getElementById('stage');const arS=sayAr(w).replace(/'/g,"\\'");
   stage.innerHTML='<div class="dicthint">Pulsa para escuchar las veces que necesites</div>'+
@@ -2055,7 +2059,7 @@ function renderDict(item){const w=item.w;const stage=document.getElementById('st
 const PRONS=['ana','enta','enti','huwa','hiya','ehna','entu','hum'];
 function startConjug(){
   if(conjMode==='table')return showConjTable();
-  sessionType='conjug';claseSessionN=null;claseSessionTopic=null;claseSessionCat=null;let pool=[];
+  sessionType='conjug';claseSessionN=null;claseSessionTopic=null;claseSessionCat=null;inMistakesMode=false;let pool=[];
   conjSel.forEach(vi=>{const v=CONJUG.verbs[vi];PRONS.forEach(pr=>{pool.push({v,pr})})});
   shuffle(pool);pool=pool.slice(0,Math.min(pool.length,24));
   deck=pool.map(x=>x);idx=0;score={ok:0,mid:0,no:0};hideAll();showScreen('study');render()}
@@ -2256,7 +2260,9 @@ function allNotedWords(){
 /* ---------- MIS FALLOS ---------- */
 function topMistakes(){
   const p=loadProg();
-  const arr=Object.keys(p).map(k=>p[k]).filter(r=>(r.fails||0)>0&&r.es&&r.ar);
+  // Una palabra sale de aquí solo cuando la aciertas en su sitio original (Niveles, Mis clases...),
+  // no por practicarla aquí mismo — así te obliga a repasarla en contexto de verdad.
+  const arr=Object.keys(p).map(k=>p[k]).filter(r=>(r.fails||0)>0&&r.es&&r.ar&&r.resolved===false);
   arr.sort((a,b)=>(b.fails||0)-(a.fails||0));
   return arr.slice(0,20);
 }
@@ -2278,7 +2284,7 @@ function renderMistakes(){
   document.getElementById('mistakesStage').innerHTML=h;
 }
 function startMistakesPractice(){
-  sessionType='practice';curLevel=null;claseSessionN=null;claseSessionTopic=null;claseSessionCat=null;
+  sessionType='practice';curLevel=null;claseSessionN=null;claseSessionTopic=null;claseSessionCat=null;inMistakesMode=true;
   let pool=topMistakes().map(r=>({es:r.es,ar:r.ar,tr:r.tr}));
   if(!pool.length)return;
   shuffle(pool);
@@ -2344,7 +2350,7 @@ function renderClases(){
   document.getElementById('clasesStage').innerHTML=h;
 }
 function startClasePracticeVocab(n){
-  sessionType='practice';curLevel=null;claseSessionN=n;claseSessionTopic=null;claseSessionCat='vocab';
+  sessionType='practice';curLevel=null;claseSessionN=n;claseSessionTopic=null;claseSessionCat='vocab';inMistakesMode=false;
   let pool=orderByMastery(getClaseWords(n).filter(w=>inClaseCat(w,'vocab')));
   if(pool.length>20)pool=pool.slice(0,20);
   if(!pool.length)return;
@@ -2353,7 +2359,7 @@ function startClasePracticeVocab(n){
   hideAll();showScreen('study');render();
 }
 function startClasePracticeFrases(n){
-  sessionType='practice';curLevel=null;claseSessionN=n;claseSessionTopic=null;claseSessionCat='frase';
+  sessionType='practice';curLevel=null;claseSessionN=n;claseSessionTopic=null;claseSessionCat='frase';inMistakesMode=false;
   let pool=orderByMastery(getClaseWords(n).filter(w=>inClaseCat(w,'frase')));
   if(pool.length>15)pool=pool.slice(0,15);
   if(!pool.length)return;
@@ -2543,7 +2549,7 @@ function openLevelStudy(L){
 }
 function startLevel(L){
   if(!levelUnlocked(L)){return;}
-  sessionType='practice';curLevel=L;claseSessionN=null;claseSessionTopic=null;claseSessionCat=null;
+  sessionType='practice';curLevel=L;claseSessionN=null;claseSessionTopic=null;claseSessionCat=null;inMistakesMode=false;
   let pool=(LEVELS.levels[String(L)]||[]).slice();
   shuffle(pool);
   if(pool.length>15)pool=pool.slice(0,15); // sesiones de 15 para no agobiar
@@ -3082,7 +3088,7 @@ function startClaseFull(n){
   else startClasePracticeFrases(n);
 }
 function startClaseTopicVocab(n,topic){
-  sessionType='practice';curLevel=null;claseSessionN=n;claseSessionTopic=topic;claseSessionCat='vocab';
+  sessionType='practice';curLevel=null;claseSessionN=n;claseSessionTopic=topic;claseSessionCat='vocab';inMistakesMode=false;
   let pool=orderByMastery(getClaseWords(n).filter(w=>w.topic===topic&&inClaseCat(w,'vocab')));
   if(pool.length>16)pool=pool.slice(0,16);
   if(!pool.length)return;
@@ -3091,7 +3097,7 @@ function startClaseTopicVocab(n,topic){
   hideAll();showScreen('study');render();
 }
 function startClaseTopicFrases(n,topic){
-  sessionType='practice';curLevel=null;claseSessionN=n;claseSessionTopic=topic;claseSessionCat='frase';
+  sessionType='practice';curLevel=null;claseSessionN=n;claseSessionTopic=topic;claseSessionCat='frase';inMistakesMode=false;
   let pool=orderByMastery(getClaseWords(n).filter(w=>w.topic===topic&&inClaseCat(w,'frase')));
   if(pool.length>12)pool=pool.slice(0,12);
   if(!pool.length)return;
