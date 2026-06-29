@@ -386,6 +386,13 @@
   .flashV-trick{margin-top:8px;padding:10px 12px;background:#FFF6E8;border:1px solid #E8C988;border-radius:12px;font-size:13px;color:#7A5A1F}
   .flashV-nav{display:flex;gap:10px;margin-top:14px;align-items:center}
   .matchGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .oddGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .oddCard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px 10px;text-align:center;cursor:pointer;font-family:inherit;transition:.15s}
+  .oddCard:disabled{cursor:default}
+  .oddAr{font-family:'Noto Naskh Arabic',serif;font-size:19px;direction:rtl;margin-bottom:5px}
+  .oddEs{font-size:12px;color:#5A6B73}
+  .oddCard.oddCorrect{background:#E8F6F2;border-color:var(--ok)}
+  .oddCard.oddWrong{background:#FBEAEA;border-color:#E0685F}
   .matchCol{display:flex;flex-direction:column;gap:8px}
   .matchBtn{background:var(--paper);border:1.5px solid var(--line);border-radius:12px;padding:11px 10px;font-size:13px;text-align:center;cursor:pointer;font-family:inherit;color:var(--ink)}
   .matchBtn.selected{border-color:var(--clay);background:#E8F6F2}
@@ -644,6 +651,8 @@
         <button class="indexRow" onclick="goNumHora()"><span class="indexIc">🔢</span><span class="indexTxt"><span class="indexT">Números y la hora</span><span class="indexD">Practica cifras y horas</span></span><span class="indexGo">→</span></button>
         <button class="indexRow" onclick="goDialogs()"><span class="indexIc">💬</span><span class="indexTxt"><span class="indexT">Situaciones reales</span><span class="indexD">Diálogos del día a día</span></span><span class="indexGo">→</span></button>
         <button class="indexRow" onclick="goDictado()"><span class="indexIc">🎧</span><span class="indexTxt"><span class="indexT">Dictado</span><span class="indexD">Escucha y escribe</span></span><span class="indexGo">→</span></button>
+        <button class="indexRow" onclick="startWordMatch([].concat(...Object.values(VOCAB)),goHome)"><span class="indexIc">🃏</span><span class="indexTxt"><span class="indexT">Memory</span><span class="indexD">Empareja español y árabe</span></span><span class="indexGo">→</span></button>
+        <button class="indexRow" onclick="startOddGame(goHome)"><span class="indexIc">🙅</span><span class="indexTxt"><span class="indexT">La que no pega</span><span class="indexD">Encuentra la palabra que no es del tema</span></span><span class="indexGo">→</span></button>
       </div>
     </div>
     <div class="indexGroup">
@@ -2352,6 +2361,7 @@ function openClase(n){
     if(grp.words.some(w=>inClaseCat(w,'vocab')))h+='<button class="mini" style="text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:6px 12px" onclick="startClaseTopicVocab('+n+',\''+t+'\')">📚 Vocabulario</button>';
     if(grp.verbs.length)h+='<button class="mini" style="text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:6px 12px" onclick="startClaseTopicVerbs('+n+',\''+t+'\')">🔀 Verbos</button>';
     if(grp.words.some(w=>inClaseCat(w,'frase')))h+='<button class="mini" style="text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:6px 12px" onclick="startClaseTopicFrases('+n+',\''+t+'\')">💬 Frases</button>';
+    if(grp.words.filter(w=>w.es&&w.ar).length>=4)h+='<button class="mini" style="text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:6px 12px" onclick="startWordMatch(getClaseWords('+n+').filter(w=>w.topic===\''+t+'\'),()=>openClase('+n+'))">🃏 Memory</button>';
     h+='</div>';
     if(grp.verbs.length){
       h+='<div style="font-size:12px;font-weight:700;color:#5A6B73;margin:10px 0 4px">🔀 Verbos</div>';
@@ -2724,6 +2734,90 @@ function mgPick(side,id){
     }
   }
 }
+
+/* ---------- MEMORY DE VOCABULARIO (parejas español-árabe) ---------- */
+let wmPairs=[],wmLeft=[],wmRight=[],wmSelLeft=null,wmMatched=new Set(),wmAttempts=0,wmBack=null,wmPool=null;
+function startWordMatch(pool,backFn){
+  const candidates=pool.filter(w=>w.es&&w.ar);
+  if(candidates.length<4){alert('No hay suficientes palabras aquí para jugar (hacen falta al menos 4).');return}
+  wmPool=pool;wmBack=backFn||goHome;
+  const chosen=shuffle(candidates.slice()).slice(0,4);
+  wmPairs=chosen.map((w,i)=>({id:i,es:w.es,ar:w.ar,tr:w.tr}));
+  wmLeft=wmPairs.map(p=>({id:p.id,txt:p.es}));shuffle(wmLeft);
+  wmRight=wmPairs.map(p=>({id:p.id,ar:p.ar,tr:p.tr}));shuffle(wmRight);
+  wmSelLeft=null;wmMatched=new Set();wmAttempts=0;
+  showScreen('verbMatch');
+  renderWordMatch();
+}
+function renderWordMatch(){
+  const stage=document.getElementById('verbMatchStage');
+  let h='<div style="text-align:center;margin-bottom:10px"><div style="font-family:\'Fraunces\',serif;font-size:22px;font-weight:600">🃏 Memory</div><div style="font-size:13px;color:#5A6B73;margin-top:4px">Toca una palabra en español y luego su pareja en árabe</div></div>';
+  h+='<div class="matchGrid"><div class="matchCol">';
+  wmLeft.forEach(it=>{const matched=wmMatched.has(it.id);h+='<button class="matchBtn'+(matched?' matched':'')+(wmSelLeft===it.id?' selected':'')+'" '+(matched?'disabled':'onclick="wmPick(\'L\','+it.id+')"')+'>'+it.txt+'</button>';});
+  h+='</div><div class="matchCol">';
+  wmRight.forEach(it=>{const matched=wmMatched.has(it.id);h+='<button class="matchBtn matchBtn-ar'+(matched?' matched':'')+'" '+(matched?'disabled':'onclick="wmPick(\'R\','+it.id+')"')+'><span class="matchAr">'+it.ar+'</span><span class="matchTr">'+(it.tr||'')+'</span></button>';});
+  h+='</div></div>';
+  if(wmMatched.size===wmPairs.length){
+    h+='<div class="done" style="margin-top:18px"><div style="font-size:40px">🎉</div><div style="color:var(--ink-soft)">Emparejado en '+wmAttempts+' intento'+(wmAttempts!=1?'s':'')+'</div><button class="start" onclick="startWordMatch(wmPool,wmBack)">Otra ronda</button><button class="back" style="display:block;margin:14px auto 0" onclick="wmBack()">← Volver</button></div>';
+  }
+  stage.innerHTML=h;
+}
+function wmPick(side,id){
+  if(wmMatched.has(id))return;
+  if(side==='L'){wmSelLeft=id;renderWordMatch();return}
+  if(side==='R'){
+    if(wmSelLeft===null)return;
+    wmAttempts++;
+    if(wmSelLeft===id){wmMatched.add(id);wmSelLeft=null;renderWordMatch();}
+    else{
+      const stage=document.getElementById('verbMatchStage');
+      wmSelLeft=null;renderWordMatch();
+      stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),350);
+    }
+  }
+}
+
+/* ---------- LA QUE NO PEGA (odd one out, por tema) ---------- */
+let ogOptions=[],ogBack=null,ogTopicLabel='';
+function startOddGame(backFn){
+  ogBack=backFn||goHome;
+  const byTopic={};
+  TOPICS.forEach(t=>{(VOCAB[t]||[]).forEach(w=>{if(w.es&&w.ar)(byTopic[t]=byTopic[t]||[]).push(w)})});
+  const ok=Object.keys(byTopic).filter(t=>byTopic[t].length>=3);
+  if(ok.length<2){alert('No hay suficiente variedad de temas todavía para este juego.');return}
+  const mainTopic=ok[Math.floor(Math.random()*ok.length)];
+  const otherTopics=ok.filter(t=>t!==mainTopic);
+  const oddTopic=otherTopics[Math.floor(Math.random()*otherTopics.length)];
+  const three=shuffle(byTopic[mainTopic].slice()).slice(0,3).map(w=>({...w,_odd:false}));
+  const odd={...shuffle(byTopic[oddTopic].slice())[0],_odd:true};
+  ogOptions=shuffle([...three,odd]);
+  ogTopicLabel=mainTopic.replace(/^🎓\s*/,'');
+  showScreen('verbMatch');
+  renderOddGame();
+}
+function renderOddGame(){
+  const stage=document.getElementById('verbMatchStage');
+  let h='<div style="text-align:center;margin-bottom:10px"><div style="font-family:\'Fraunces\',serif;font-size:22px;font-weight:600">🙅 La que no pega</div><div style="font-size:13px;color:#5A6B73;margin-top:4px">3 son del mismo tema, 1 no — ¿cuál es la diferente?</div></div>';
+  h+='<div class="oddGrid" id="oddGrid">';
+  ogOptions.forEach((w,i)=>{h+='<button class="oddCard" onclick="oddPick('+i+')"><div class="oddAr">'+w.ar+'</div><div class="oddEs">'+w.es+'</div></button>';});
+  h+='</div><div id="oddResult"></div>';
+  stage.innerHTML=h;
+}
+function oddPick(i){
+  const w=ogOptions[i];
+  const cards=document.querySelectorAll('#oddGrid .oddCard');
+  cards.forEach((c,idx)=>{
+    c.disabled=true;
+    if(ogOptions[idx]._odd)c.classList.add('oddCorrect');
+    else if(idx===i)c.classList.add('oddWrong');
+  });
+  const correctWord=ogOptions.find(o=>o._odd);
+  const result=document.getElementById('oddResult');
+  result.innerHTML='<div style="text-align:center;margin-top:16px;font-size:13.5px;color:'+(w._odd?'var(--ok)':'#C0392B')+'">'+(w._odd?'¡Correcto! Las otras tres eran del tema "'+ogTopicLabel+'"':'No era esa — la diferente era "'+correctWord.es+'"')+'</div>'+
+    '<button class="start" style="margin-top:10px" onclick="startOddGame(ogBack)">Otra ronda</button>'+
+    '<button class="back" style="display:block;margin:14px auto 0" onclick="ogBack()">← Volver</button>';
+}
+
 function renderVerbs(){
   const stage=document.getElementById('verbsStage');
   let h='<div class="vsec-intro"><h2>🔤 Verbos</h2><p>Los verbos del día a día en kuwaití. Toca uno para ver tiempos y frases.</p></div>';
