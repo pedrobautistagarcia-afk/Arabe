@@ -3370,10 +3370,12 @@ function startNumbers(){
   }
   nhDeck=deck;nhIdx=0;nhScore=0;renderNumber();
 }
+let nhCurrentWord=null;
 function renderNumber(){
   const stage=document.getElementById('nhStage');
   if(nhIdx>=nhDeck.length){nhDone('números');return;}
   const n=nhDeck[nhIdx];const correct=numName(n);
+  nhCurrentWord={es:'El número '+n,ar:correct.ar,tr:correct.tr};
   // 4 opciones
   let opts=[correct];let tries=0;
   while(opts.length<4&&tries<50){tries++;
@@ -3422,6 +3424,7 @@ function renderHour(){
   const stage=document.getElementById('nhStage');
   if(nhIdx>=nhDeck.length){nhDone('horas');return;}
   const{h,mm}=nhDeck[nhIdx];const correct=hourName(h,mm);
+  nhCurrentWord={es:correct.es,ar:correct.ar,tr:correct.tr};
   let opts=[correct];let tries=0;
   while(opts.length<4&&tries<50){tries++;
     const rh=1+Math.floor(Math.random()*12);const rmm=['00','15','30'][Math.floor(Math.random()*3)];
@@ -3439,6 +3442,7 @@ function renderHour(){
 }
 function nhAnswer(btn,correct,sayAr){
   const opts=btn.parentElement.querySelectorAll('.vp-opt');opts.forEach(o=>o.style.pointerEvents='none');
+  if(nhCurrentWord)updateRec(nhCurrentWord,correct?'ok':'no');
   if(correct){btn.classList.add('correct');nhScore++;if(voiceOn)speak(sayAr);}
   else{btn.classList.add('wrong');opts.forEach(o=>{if(o.getAttribute('onclick').includes('true'))o.classList.add('correct')});}
   setTimeout(()=>{nhIdx++;if(nhMode==='num')renderNumber();else renderHour();},correct?900:1700);
