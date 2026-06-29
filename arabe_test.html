@@ -636,10 +636,6 @@
       <div class="indexList">
         <button class="indexRow" onclick="goLevels()"><span class="indexIc">🗺️</span><span class="indexTxt"><span class="indexT">Niveles</span><span class="indexD">Tu ruta paso a paso</span></span><span class="indexGo">→</span></button>
         <button class="indexRow" onclick="goClases()"><span class="indexIc">🎓</span><span class="indexTxt"><span class="indexT">Mis clases</span><span class="indexD">Lo visto con tu profesor</span></span><span class="indexGo">→</span></button>
-        <button class="indexRow" onclick="goSynonyms()"><span class="indexIc">⚖️</span><span class="indexTxt"><span class="indexT">Formas dobles</span><span class="indexD">Sinónimos para no confundir</span></span><span class="indexGo">→</span></button>
-        <button class="indexRow" onclick="goMistakes()"><span class="indexIc">🎯</span><span class="indexTxt"><span class="indexT">Mis fallos</span><span class="indexD">Lo que más se te resiste</span></span><span class="indexGo">→</span></button>
-        <button class="indexRow" onclick="goHowTo()"><span class="indexIc">❓</span><span class="indexTxt"><span class="indexT">Cómo funciona</span><span class="indexD">Guía rápida de toda la app</span></span><span class="indexGo">→</span></button>
-        <button class="indexRow" onclick="goContact()"><span class="indexIc">📩</span><span class="indexTxt"><span class="indexT">Sugerir contenido</span><span class="indexD">Manda una foto o un mensaje a Pedro</span></span><span class="indexGo">→</span></button>
       </div>
     </div>
     <div class="indexGroup">
@@ -651,20 +647,34 @@
         <button class="indexRow" onclick="goNumHora()"><span class="indexIc">🔢</span><span class="indexTxt"><span class="indexT">Números y la hora</span><span class="indexD">Practica cifras y horas</span></span><span class="indexGo">→</span></button>
         <button class="indexRow" onclick="goDialogs()"><span class="indexIc">💬</span><span class="indexTxt"><span class="indexT">Situaciones reales</span><span class="indexD">Diálogos del día a día</span></span><span class="indexGo">→</span></button>
         <button class="indexRow" onclick="goDictado()"><span class="indexIc">🎧</span><span class="indexTxt"><span class="indexT">Dictado</span><span class="indexD">Escucha y escribe</span></span><span class="indexGo">→</span></button>
+      </div>
+    </div>
+    <div class="indexGroup">
+      <div class="indexLabel"><span class="num">III</span><span class="word">Juegos</span></div>
+      <div class="indexList">
         <button class="indexRow" onclick="startWordMatch([].concat(...Object.values(VOCAB)),goHome)"><span class="indexIc">🃏</span><span class="indexTxt"><span class="indexT">Memory</span><span class="indexD">Empareja español y árabe</span></span><span class="indexGo">→</span></button>
         <button class="indexRow" onclick="startOddGame(goHome)"><span class="indexIc">🙅</span><span class="indexTxt"><span class="indexT">La que no pega</span><span class="indexD">Encuentra la palabra que no es del tema</span></span><span class="indexGo">→</span></button>
       </div>
     </div>
     <div class="indexGroup">
-      <div class="indexLabel"><span class="num">III</span><span class="word">Explorar</span></div>
+      <div class="indexLabel"><span class="num">IV</span><span class="word">Explorar</span></div>
       <div class="indexList">
         <button class="indexRow" onclick="goExplore()"><span class="indexIc">📖</span><span class="indexTxt"><span class="indexT">Explorar</span><span class="indexD">Todo el vocabulario</span></span><span class="indexGo">→</span></button>
         <button class="indexRow" onclick="goLbKw()"><span class="indexIc">🔀</span><span class="indexTxt"><span class="indexT">Líbano vs Kuwait</span><span class="indexD">Compara los dos dialectos</span></span><span class="indexGo">→</span></button>
         <button class="indexRow" onclick="goStories()"><span class="indexIc">📜</span><span class="indexTxt"><span class="indexT">Historias cortas</span><span class="indexD">Lee en árabe, traduce si te atascas</span></span><span class="indexGo">→</span></button>
+        <button class="indexRow" onclick="goSynonyms()"><span class="indexIc">⚖️</span><span class="indexTxt"><span class="indexT">Formas dobles</span><span class="indexD">Sinónimos para no confundir</span></span><span class="indexGo">→</span></button>
+        <button class="indexRow" onclick="goMistakes()"><span class="indexIc">🎯</span><span class="indexTxt"><span class="indexT">Mis fallos</span><span class="indexD">Lo que más se te resiste</span></span><span class="indexGo">→</span></button>
+      </div>
+    </div>
+    <div class="indexGroup">
+      <div class="indexLabel"><span class="num">V</span><span class="word">Ayuda</span></div>
+      <div class="indexList">
+        <button class="indexRow" onclick="goHowTo()"><span class="indexIc">❓</span><span class="indexTxt"><span class="indexT">Cómo funciona</span><span class="indexD">Guía rápida de toda la app</span></span><span class="indexGo">→</span></button>
+        <button class="indexRow" onclick="goContact()"><span class="indexIc">📩</span><span class="indexTxt"><span class="indexT">Sugerir contenido</span><span class="indexD">Manda una foto o un mensaje a Pedro</span></span><span class="indexGo">→</span></button>
       </div>
     </div>
     <!-- progreso plegable, discreto al final -->
-    <div class="indexLabel" style="margin-top:24px"><span class="num">IV</span><span class="word">Mi progreso</span></div>
+    <div class="indexLabel" style="margin-top:24px"><span class="num">VI</span><span class="word">Mi progreso</span></div>
     <button class="lvlbtn" style="margin-bottom:14px" onclick="renderHome()">🔄 Ver / actualizar mi progreso</button>
     <div id="progDetail"></div>
   </div>
